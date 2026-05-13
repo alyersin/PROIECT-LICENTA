@@ -16,6 +16,9 @@ export function getNavigationForRole(roleCode) {
     return [
       ...baseLinks,
       { href: "/containers", label: "Containers" },
+      { href: "/gate", label: "Gate Overview" },
+      { href: "/gate/in", label: "Gate IN" },
+      { href: "/gate/out", label: "Gate OUT" },
     ];
   }
 
@@ -23,6 +26,7 @@ export function getNavigationForRole(roleCode) {
     return [
       ...baseLinks,
       { href: "/containers", label: "Containers" },
+      { href: "/vessel-visits", label: "Vessel Visits" },
     ];
   }
 

@@ -1,0 +1,29 @@
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { registerGateIn } from "@/services/gate.service";
+
+export async function POST(request) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const payload = await request.json();
+  const result = await registerGateIn(user, payload);
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { errors: result.errors },
+      { status: result.status || 400 }
+    );
+  }
+
+  return NextResponse.json(
+    {
+      container: result.container,
+      gateTransaction: result.gateTransaction,
+    },
+    { status: 201 }
+  );
+}

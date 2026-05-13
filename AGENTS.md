@@ -4,19 +4,20 @@
 
 MaritimeOps is a simplified Container Terminal Management System for a university licenta project.
 
-Build and maintain the app according to the documentation in `/docs`.
+Build and maintain the app according to the documentation in `/docs/full_documentation`.
 
 Main source of truth:
 
-- docs/00_README.md
-- docs/02_requirements.md
-- docs/03_roles_permissions.md
-- docs/04_use_cases.md
-- docs/08_backend_architecture.md
-- docs/09_database_design.md
-- docs/10_sql_schema_plan.md
-- docs/18_build_implementation_plan.md
-- docs/19_relational_model_constraints.md
+- docs/full_documentation/00_README.md
+- docs/full_documentation/02_requirements.md
+- docs/full_documentation/03_roles_permissions.md
+- docs/full_documentation/04_use_cases.md
+- docs/full_documentation/08_backend_architecture.md
+- docs/full_documentation/09_database_design.md
+- docs/full_documentation/10_sql_schema_plan.md
+- docs/full_documentation/18_build_implementation_plan.md
+- docs/full_documentation/19_relational_model_constraints.md
+- docs/Current_state.md
 
 Use other docs only when relevant to the task.
 
@@ -108,18 +109,25 @@ Keep the project simple, readable, and beginner-friendly.
 
 Make focused changes.
 
-Do not run commands unless the user explicitly asks for them in the current prompt.
+Allowed without asking:
+
+- read-only inspection commands for listing and reading files
+
+Do not run build/test/install/deployment/database commands unless the user explicitly asks.
 
 Do not run automatically:
+
 - npm run lint
 - npm run build
 - npm test
 - npm install
+- npm run dev
 - docker commands
 - database commands
 - migration/reset commands
+- delete/reset/cleanup commands
 
-Only run these commands when the user clearly says to run them.
+The user will run commands manually.
 
 Do not create long summaries after every change.
 

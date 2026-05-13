@@ -139,6 +139,131 @@ export async function getContainerByNumber(containerNo) {
   return result.rows[0] || null;
 }
 
+export async function createContainer(client, data) {
+  const executor = client || pool;
+
+  const result = await executor.query(
+    `
+      INSERT INTO containers (
+        container_no,
+        iso_type,
+        size_ft,
+        status,
+        is_reefer,
+        gross_weight_kg,
+        current_area,
+        current_position,
+        id_customer
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `,
+    [
+      data.container_no,
+      data.iso_type || null,
+      data.size_ft || null,
+      data.status,
+      data.is_reefer || false,
+      data.gross_weight_kg || null,
+      data.current_area || null,
+      data.current_position || null,
+      data.id_customer || null,
+    ]
+  );
+
+  return result.rows[0];
+}
+
+export async function updateContainerAfterGateIn(client, idContainer, data) {
+  const executor = client || pool;
+
+  const result = await executor.query(
+    `
+      UPDATE containers
+      SET
+        iso_type = COALESCE($1, iso_type),
+        size_ft = COALESCE($2, size_ft),
+        status = 'in_terminal',
+        is_reefer = $3,
+        gross_weight_kg = COALESCE($4, gross_weight_kg),
+        current_area = $5,
+        current_position = $6,
+        id_customer = COALESCE($7, id_customer)
+      WHERE id_container = $8
+      RETURNING *
+    `,
+    [
+      data.iso_type || null,
+      data.size_ft || null,
+      data.is_reefer || false,
+      data.gross_weight_kg || null,
+      data.current_area,
+      data.current_position,
+      data.id_customer || null,
+      idContainer,
+    ]
+  );
+
+  return result.rows[0] || null;
+}
+
+export async function updateContainerAfterGateOut(client, idContainer) {
+  const executor = client || pool;
+
+  const result = await executor.query(
+    `
+      UPDATE containers
+      SET status = 'gate_out'
+      WHERE id_container = $1
+      RETURNING *
+    `,
+    [idContainer]
+  );
+
+  return result.rows[0] || null;
+}
+
+export async function updateContainerAfterDischarge(client, idContainer, data) {
+  const executor = client || pool;
+
+  const result = await executor.query(
+    `
+      UPDATE containers
+      SET
+        status = 'discharged',
+        current_area = $1,
+        current_position = $2,
+        gross_weight_kg = COALESCE($3, gross_weight_kg)
+      WHERE id_container = $4
+      RETURNING *
+    `,
+    [
+      data.current_area,
+      data.current_position,
+      data.gross_weight_kg || null,
+      idContainer,
+    ]
+  );
+
+  return result.rows[0] || null;
+}
+
+export async function updateContainerAfterLoad(client, idContainer) {
+  const executor = client || pool;
+
+  const result = await executor.query(
+    `
+      UPDATE containers
+      SET status = 'loaded'
+      WHERE id_container = $1
+      RETURNING *
+    `,
+    [idContainer]
+  );
+
+  return result.rows[0] || null;
+}
+
 export async function updateContainerLocation(client, idContainer, area, position) {
   const executor = client || pool;
 

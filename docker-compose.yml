@@ -1,0 +1,27 @@
+services:
+  web:
+    build: .
+    container_name: maritimeops-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    container_name: maritimeops-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: maritimeops_db
+      POSTGRES_USER: maritimeops_user
+      POSTGRES_PASSWORD: maritimeops_password
+    volumes:
+      - maritimeops_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  maritimeops_pgdata:

@@ -264,6 +264,30 @@ textarea {
   color: white;
 }
 
+.app-mini-button {
+  border: 1px solid var(--color-border);
+  background: rgba(37, 99, 235, 0.14);
+  color: #bfdbfe;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.app-mini-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.app-mini-error {
+  display: block;
+  color: #fca5a5;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  max-width: 220px;
+}
+
 .app-form {
   display: grid;
   gap: 1rem;
@@ -319,8 +343,9 @@ textarea {
 }
 
 .app-textarea {
-  min-height: 110px;
+  min-height: 220px;
   resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .app-error {
@@ -350,6 +375,11 @@ textarea {
   border: 1px solid rgba(22, 163, 74, 0.45);
   background: rgba(22, 163, 74, 0.12);
   color: #bbf7d0;
+}
+
+.app-error-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
 }
 
 .app-table-wrapper {
@@ -391,6 +421,18 @@ textarea {
 .app-table-action {
   text-align: right;
   white-space: nowrap;
+}
+
+.app-table-actions-inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.app-inline-action {
+  display: inline-grid;
+  justify-items: end;
 }
 
 .app-link {
@@ -620,5 +662,9 @@ textarea {
   .app-details-grid,
   .app-filter-form {
     grid-template-columns: 1fr;
+  }
+
+  .app-table-actions-inline {
+    justify-content: flex-start;
   }
 }

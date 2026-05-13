@@ -1,0 +1,13 @@
+.next
+node_modules
+.git
+.env
+*.log
+coverage
+Dockerfile
+docker-compose.yml
+README.md
+docs
+*.docx
+*.drawio
+*.svg

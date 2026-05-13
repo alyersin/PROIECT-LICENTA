@@ -1,0 +1,39 @@
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { getVesselVisits } from "@/repositories/vesselVisits.repository";
+import { createVesselVisitFromPayload } from "@/services/vesselVisits.service";
+
+export async function GET() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (user.role_code !== "TERMINAL_OPERATOR") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const vesselVisits = await getVesselVisits();
+  return NextResponse.json({ vesselVisits });
+}
+
+export async function POST(request) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const payload = await request.json();
+  const result = await createVesselVisitFromPayload(user, payload);
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { errors: result.errors },
+      { status: result.status || 400 }
+    );
+  }
+
+  return NextResponse.json({ vesselVisit: result.vesselVisit }, { status: 201 });
+}
