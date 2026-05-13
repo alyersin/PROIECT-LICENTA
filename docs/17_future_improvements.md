@@ -192,3 +192,26 @@ Future improvements:
 - mobile sidebar drawer
 - responsive tables
 - mobile-friendly forms
+
+
+## 18. More detailed customer-user association
+
+The current ERD keeps the customer association mainly through `containers.id_customer`. A future version could add a more detailed access model for Customer / Line Agent accounts, for example:
+
+```txt
+user_customers
+```
+
+Possible fields:
+
+```txt
+id_user
+id_customer
+assigned_at
+```
+
+This is not required for the current licenta version.
+
+## 19. More formal audit model
+
+The current system stores operational events in `container_events`. A future version could add a separate audit model for all system changes, not only container operations.

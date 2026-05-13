@@ -55,6 +55,10 @@ src/
         route.js
       users/[id]/
         route.js
+      profile/
+        route.js
+      change-password/
+        route.js
       containers/
         route.js
       containers/[id]/
@@ -62,6 +66,8 @@ src/
       gate/in/
         route.js
       gate/out/
+        route.js
+      gate/validate-container/
         route.js
       vessel-visits/
         route.js
@@ -243,6 +249,10 @@ GET    /api/users
 POST   /api/users
 GET    /api/users/:id
 PATCH  /api/users/:id
+PATCH  /api/users/:id/deactivate
+PATCH  /api/users/:id/change-role
+GET    /api/profile
+PATCH  /api/change-password
 ```
 
 ### Containers
@@ -257,9 +267,12 @@ PATCH  /api/containers/:id/location
 ### Gate
 
 ```txt
+POST   /api/gate/validate-container
 POST   /api/gate/in
 POST   /api/gate/out
 ```
+
+The validation route represents the logical `Validate Container` use case. It does not require a separate database table.
 
 ### Vessel visits
 
@@ -349,3 +362,34 @@ The backend intentionally avoids:
 - advanced logging
 
 This keeps the project easier to understand and present.
+
+
+### View Profile
+
+- any authenticated user can view their own profile
+- backend reads from `users` and `roles`
+
+### Change Password
+
+- any authenticated user can change their own password
+- current password is verified with bcrypt
+- new password is hashed and saved in `users.password_hash`
+
+### Manage Users
+
+- only Administrator can manage users
+- Create User inserts into `users`
+- Update User modifies allowed user fields
+- Delete User is logical deactivation through `users.is_active = false`
+- Assign / Change Role updates `users.id_role`
+
+### Container events
+
+When an event changes or records a container location, the backend should also save:
+
+```txt
+event_area
+event_position
+```
+
+These fields are especially useful for `GATE_IN`, `DISCHARGED` and `LOCATION_UPDATED` events.

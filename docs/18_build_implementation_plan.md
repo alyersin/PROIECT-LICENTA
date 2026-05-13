@@ -35,10 +35,12 @@ Tasks:
 Create database/schema.sql
 Create database/seed.sql
 Create roles table
-Create users table
+Create users table without User_Roles table
 Create customers table
 Create containers table
 Create operational tables
+Add container_events.event_area and container_events.event_position
+Add CHECK constraints where useful
 Run schema in PostgreSQL container
 Run seed data
 ```
@@ -73,7 +75,7 @@ vesselVisits.repository.js
 events.repository.js
 ```
 
-## 5. Phase 4 - Authentication
+## 5. Phase 4 - Authentication, profile and password
 
 Tasks:
 
@@ -83,6 +85,8 @@ Use Credentials Provider
 Use bcrypt compare
 Create login page
 Create logout action
+Create View Profile page
+Create Change Password page
 Protect dashboard routes
 Load user role
 ```
@@ -133,8 +137,8 @@ Create user form
 Create user API routes
 Add manual validation
 Hash password with bcrypt
-Allow activate/deactivate user
-Allow role change
+Allow Delete User through activate/deactivate user
+Allow Assign / Change Role
 ```
 
 Role:
@@ -173,6 +177,7 @@ Tasks:
 Create Gate IN page
 Create Gate OUT page
 Create gate API routes
+Implement Validate Container logic
 Add manual validation
 Use database transactions
 Create container events
@@ -239,7 +244,7 @@ Confirm discharge
 Confirm loading
 Update operation status
 Update container status/location
-Create DISCHARGED event
+Create DISCHARGED event with event_area and event_position
 Create LOADED event
 ```
 
@@ -284,6 +289,9 @@ Upload CSV
 Confirm Discharge
 Confirm Loading
 Role permissions
+View Profile
+Change Password
+Validate Container
 Docker deployment
 ```
 
@@ -304,3 +312,21 @@ Docker deployment
 12. Add Docker deployment
 13. Test everything
 ```
+
+
+## 17. Phase 15 - Formal relational model
+
+Tasks:
+
+```txt
+Write the formal relational schema
+List primary keys
+List foreign keys
+List NOT NULL constraints
+List UNIQUE constraints
+List CHECK constraints
+Explain nullable foreign keys
+Explain the ERD loops created by container_events
+```
+
+This phase is important for the written licenta documentation because the ERD is the visual model, while the formal relational model explains the actual relational schema and constraints.

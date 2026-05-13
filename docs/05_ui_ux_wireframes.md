@@ -41,6 +41,8 @@ Contains:
 - application name
 - logged-in user name
 - role badge
+- profile link
+- change password link
 - logout button
 
 ### Sidebar
@@ -313,3 +315,39 @@ DISCHARGED         amber
 LOADED             green
 LOCATION_UPDATED   purple
 ```
+
+
+## 18. Profile page wireframe
+
+```txt
+View Profile
+---------------------------------------------------
+Full name:        Admin User
+Email:            admin@maritimeops.local
+Role:             ADMIN
+Account status:   Active
+
+[ Change Password ]
+---------------------------------------------------
+```
+
+## 19. Change password page wireframe
+
+```txt
+Change Password
+---------------------------------------------------
+Current password   [________________]
+New password       [________________]
+Confirm password   [________________]
+
+[ Save new password ]
+---------------------------------------------------
+```
+
+## 20. Use case alignment note
+
+The final Use Case diagram includes common actions for the general `User` actor: Login, Logout, View Profile and Change Password. These pages should be available for all authenticated roles through the header or sidebar.
+
+The Administrator page supports Manage Users, including Create User, Update User, Delete User through deactivation and Assign / Change Role.
+
+The application does not include a separate Manage Stowage Plan screen in the current version.

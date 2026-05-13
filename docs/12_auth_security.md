@@ -85,7 +85,27 @@ Example:
 const passwordOk = await bcrypt.compare(password, user.password_hash);
 ```
 
-## 5. Role-based authorization
+## 5. View Profile and Change Password
+
+All authenticated users can access View Profile and Change Password because these use cases belong to the general `User` actor.
+
+View Profile reads:
+
+```txt
+users.full_name
+users.email
+roles.code
+users.is_active
+```
+
+Change Password must:
+
+1. check the current password with bcrypt
+2. validate the new password
+3. hash the new password
+4. update `users.password_hash`
+
+## 6. Role-based authorization
 
 Authentication answers:
 
@@ -107,7 +127,7 @@ if (user.role_code !== "ADMIN") {
 }
 ```
 
-## 6. Manual validation
+## 7. Manual validation
 
 The project uses manual validation instead of Zod.
 
@@ -135,7 +155,7 @@ if (!password) {
 }
 ```
 
-## 7. Environment variables
+## 8. Environment variables
 
 Secrets should be stored in `.env`.
 
@@ -157,7 +177,7 @@ Use:
 
 for documentation.
 
-## 8. Database security
+## 9. Database security
 
 For the local Docker setup:
 
@@ -182,7 +202,7 @@ ports:
   - "5432:5432"
 ```
 
-## 9. UFW firewall
+## 10. UFW firewall
 
 For a simple local Linux server demo:
 
@@ -195,7 +215,7 @@ sudo ufw status
 
 If SSH is not needed from outside, restrict it to local network.
 
-## 10. HTTPS
+## 11. HTTPS
 
 HTTPS is not required for the local licenta demo.
 
@@ -203,7 +223,7 @@ Recommended explanation:
 
 > The academic version is deployed on a local Linux server in a controlled environment, so HTTPS is not mandatory. In a production environment, HTTPS would be required.
 
-## 11. Nginx
+## 12. Nginx
 
 Nginx is not required for the simple local demo.
 
@@ -220,7 +240,7 @@ Nginx could be added later for:
 - reverse proxy
 - multiple applications on the same server
 
-## 12. Docker logs
+## 13. Docker logs
 
 Docker logs are enough for the project.
 
@@ -232,13 +252,14 @@ docker compose logs -f web
 docker compose logs -f db
 ```
 
-## 13. Security summary
+## 14. Security summary
 
 Implemented:
 
 ```txt
 bcrypt password hashing
 role-based access
+profile and password change protection
 manual validation
 environment variables
 UFW firewall

@@ -13,11 +13,15 @@ Web application for simplified operational management in a container terminal.
 MaritimeOps is designed as an academic licenta project. The application supports the most important simplified operations of a container terminal:
 
 - user authentication
+- logout
+- profile viewing
+- password change
 - role-based access
 - user management
 - container search and visualization
 - Gate IN operations
 - Gate OUT operations
+- container validation before gate operations
 - vessel visit management
 - CSV import for discharge and loading lists
 - confirmation of loading and discharge operations
@@ -61,27 +65,30 @@ current_position
 
 The position is textual and simplified. The system does not automatically manage stacking levels, but the same position can represent a container stack. For example, B2-05 can be read as block/sector B2, position 05. If multiple containers are registered with the same position, they can be conceptually interpreted as being stacked in the same location. The application does not automatically calculate the physical tier and does not verify if the position is free.
 
-This makes the application easier to build and explain.
-
 ## 6. Main users
 
-The system has four main user roles:
+The system has one general actor and four specialized roles.
 
-| Role | Main responsibility |
+| Actor / Role | Main responsibility |
 |---|---|
+| User | Login, Logout, View Profile, Change Password |
 | Administrator | Manages users and roles |
 | Gate Operator | Registers Gate IN and Gate OUT operations |
 | Terminal Operator | Manages vessel visits and operational container updates |
 | Customer / Line Agent | Views associated containers |
+
+Administrator, Gate Operator, Terminal Operator and Customer / Line Agent inherit the general User actor.
 
 ## 7. Main application modules
 
 | Module | Description |
 |---|---|
 | Authentication | Login and logout |
-| User Management | Create, edit, activate/deactivate users |
+| Profile | View Profile and Change Password |
+| User Management | Create, update, deactivate users and assign/change roles |
 | Container Management | View containers, details and history |
 | Gate Operations | Register Gate IN and Gate OUT |
+| Validate Container | Logical validation included by Gate IN and Gate OUT |
 | Vessel Visits | Create visits, import CSV lists and confirm operations |
 | CSV Import | Import discharge/loading lists |
 | Operational History | Store container events |
@@ -127,9 +134,16 @@ The chosen stack is simple, modern and realistic:
 Included:
 
 - login/logout
+- view profile
+- change password
 - role-based dashboards
 - manage users
+- create user
+- update user
+- delete user through logical deactivation
+- assign/change role
 - view containers
+- validate container before gate operations
 - register Gate IN
 - register Gate OUT
 - manage vessel visits
@@ -142,6 +156,7 @@ Not included:
 - complex yard slot planning
 - automatic crane planning
 - real stowage planning
+- separate Manage Stowage Plan module
 - EDI integration
 - Kubernetes
 - microservices
@@ -150,6 +165,10 @@ Not included:
 - HTTPS for local licenta demo
 - Nginx reverse proxy
 
-## 11. Final goal
+## 11. Stowage plan clarification
+
+The official stowage plan is not created by MaritimeOps. In real operations, the official stowage plan is prepared or coordinated by the vessel side, shipping line, chief officer, commander or agent. MaritimeOps works with the operational loading/discharge lists received from outside the system and records confirmations inside the terminal.
+
+## 12. Final goal
 
 The final goal is to produce a working prototype that demonstrates how a container terminal can manage basic operational flows using a web application, a relational database and a local Docker-based deployment.

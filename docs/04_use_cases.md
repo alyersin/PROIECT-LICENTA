@@ -6,11 +6,36 @@
 |---|---|---|
 | UC-01 | Login | User |
 | UC-02 | Logout | User |
-| UC-03 | Manage Users | Administrator |
-| UC-04 | View Containers | Gate Operator / Terminal Operator / Customer Agent |
-| UC-05 | Register Gate IN | Gate Operator |
-| UC-06 | Register Gate OUT | Gate Operator |
-| UC-07 | Manage Vessel Visits | Terminal Operator |
+| UC-03 | View Profile | User |
+| UC-04 | Change Password | User |
+| UC-05 | Manage Users | Administrator |
+| UC-06 | View Containers | Gate Operator / Terminal Operator / Customer / Line Agent |
+| UC-07 | Validate Container | System, included by Gate IN and Gate OUT |
+| UC-08 | Register Gate IN | Gate Operator |
+| UC-09 | Register Gate OUT | Gate Operator |
+| UC-10 | Manage Vessel Visits | Terminal Operator |
+
+## 2. Actor inheritance
+
+The general actor `User` represents any authenticated user.
+
+The specialized actors inherit `User`:
+
+```txt
+Administrator
+Gate Operator
+Terminal Operator
+Customer / Line Agent
+```
+
+This means all specialized users can access:
+
+```txt
+Login
+Logout
+View Profile
+Change Password
+```
 
 ## UC-01 - Login
 
@@ -67,14 +92,85 @@ The user is authenticated.
 ### Main flow
 
 1. User selects Logout.
-2. System closes the session.
-3. System redirects user to the login page.
+2. System asks for confirmation if required.
+3. User confirms logout.
+4. System closes the session.
+5. System redirects user to the login page.
 
-## UC-03 - Manage Users
+### Alternative flow
+
+User cancels logout:
+
+1. System keeps the session active.
+
+## UC-03 - View Profile
 
 ### Description
 
-The Administrator manages the user accounts of the system.
+The authenticated user views account profile information.
+
+### Actor
+
+User
+
+### Precondition
+
+The user is authenticated.
+
+### Main flow
+
+1. User opens View Profile.
+2. System identifies the authenticated user.
+3. System reads data from `users` and `roles`.
+4. System displays full name, email, role and account status.
+
+### Alternative flow
+
+Invalid session:
+
+1. System redirects the user to Login.
+
+## UC-04 - Change Password
+
+### Description
+
+The authenticated user changes their own password.
+
+### Actor
+
+User
+
+### Precondition
+
+The user is authenticated.
+
+### Main flow
+
+1. User opens Change Password.
+2. System displays the change password form.
+3. User enters current password and new password.
+4. System checks the current password using bcrypt.
+5. System validates the new password.
+6. User confirms the change.
+7. System saves the new `password_hash` in `users`.
+8. System displays confirmation.
+
+### Alternative flows
+
+Incomplete data:
+
+1. System displays a validation error.
+
+Wrong current password or invalid new password:
+
+1. System displays an error.
+2. User corrects the data.
+
+## UC-05 - Manage Users
+
+### Description
+
+The Administrator manages the user accounts of the system. This use case includes Create User, Update User, Delete User and Assign / Change Role.
 
 ### Actor
 
@@ -82,23 +178,26 @@ Administrator
 
 ### Precondition
 
-Administrator is authenticated.
+Administrator is authenticated and has administration rights.
 
 ### Main flow
 
 1. Administrator opens Manage Users.
 2. System displays user list.
 3. Administrator chooses an operation:
-   - create user
-   - edit user
-   - reset password
-   - activate/deactivate user
-   - change role
+   - Create User
+   - Update User
+   - Delete User
+   - Assign / Change Role
 4. System displays the correct form.
 5. Administrator enters or modifies data.
 6. System performs manual validation.
 7. System saves the changes.
 8. System displays a success message.
+
+### Notes
+
+Delete User is implemented as logical deactivation through `users.is_active`, not as physical deletion. This keeps the operational history valid.
 
 ### Manual validation examples
 
@@ -108,11 +207,11 @@ Administrator is authenticated.
 - role must be selected
 - password is required when creating a user
 
-## UC-04 - View Containers
+## UC-06 - View Containers
 
 ### Description
 
-Authorized users view containers and container details.
+Authorized users view containers and container details. Terminal Operator can also update the simplified area and position when needed.
 
 ### Actors
 
@@ -127,7 +226,7 @@ User is authenticated and has viewing permission.
 ### Main flow
 
 1. User opens Containers page.
-2. System displays available containers.
+2. System displays available containers for the authenticated role.
 3. User searches or filters the list.
 4. System displays filtered results.
 5. User selects one container.
@@ -140,6 +239,10 @@ User is authenticated and has viewing permission.
    - current position
    - customer
    - operational history
+7. If the user is Terminal Operator, the system allows location correction.
+8. Terminal Operator selects a new area and position.
+9. System validates the values.
+10. System updates the container and creates a `LOCATION_UPDATED` event.
 
 ### Alternative flows
 
@@ -150,17 +253,12 @@ No results:
 
 Customer / Line Agent restriction:
 
-1. System displays only containers associated with that customer.
+1. System displays only containers associated with the allowed customer/line context.
 
-### Location update
+Invalid location update:
 
-Only Terminal Operator can update location.
-
-1. Terminal Operator opens container details.
-2. Terminal Operator chooses a new area and position.
-3. System validates values.
-4. System updates container.
-5. System creates a `LOCATION_UPDATED` event.
+1. System displays error.
+2. Container data remains unchanged.
 
 Allowed simplified areas:
 
@@ -174,11 +272,44 @@ ISO Tanks / IMDG Cargo Area
 
 The position is textual and simplified. The same position can represent a container stack, but the application does not calculate the physical tier and does not verify if the position is free.
 
-## UC-05 - Register Gate IN
+## UC-07 - Validate Container
 
 ### Description
 
-Gate Operator registers the entry of a container into the terminal.
+The system validates the container before Gate IN and Gate OUT operations.
+
+### Actor
+
+System, triggered by Register Gate IN or Register Gate OUT.
+
+### Precondition
+
+The Gate Operator entered container data in the form.
+
+### Main flow
+
+1. Gate operation sends container data for verification.
+2. System checks container number format and required fields.
+3. System checks if the container exists or can be introduced as a new record.
+4. System checks current container status and operation permission.
+5. System returns valid result or error message.
+
+### Alternative flow
+
+Invalid container or missing data:
+
+1. System stops the operation.
+2. System asks the user to correct the data.
+
+### Note
+
+Validate Container is not a separate table. It is a logical validation step used by Gate IN and Gate OUT.
+
+## UC-08 - Register Gate IN
+
+### Description
+
+Gate Operator registers the entry of a container into the terminal and sets the initial area and position.
 
 ### Actor
 
@@ -186,7 +317,7 @@ Gate Operator
 
 ### Precondition
 
-Gate Operator is authenticated.
+Gate Operator is authenticated and the container can be identified or introduced as a new record.
 
 ### Main flow
 
@@ -201,7 +332,7 @@ Gate Operator is authenticated.
    - area after entry
    - position after entry
    - observations
-4. System performs manual validation.
+4. System includes Validate Container.
 5. System creates or updates the container record.
 6. System creates a gate transaction.
 7. System updates container status and location.
@@ -220,7 +351,7 @@ Invalid area/position:
 1. System displays error.
 2. User selects a valid area and position.
 
-## UC-06 - Register Gate OUT
+## UC-09 - Register Gate OUT
 
 ### Description
 
@@ -232,7 +363,7 @@ Gate Operator
 
 ### Precondition
 
-Gate Operator is authenticated and container exists.
+Gate Operator is authenticated, the container exists and it has the right to exit.
 
 ### Main flow
 
@@ -245,7 +376,7 @@ Gate Operator is authenticated and container exists.
    - destination
    - seal number
    - observations
-4. System validates data.
+4. System includes Validate Container.
 5. System checks if container can exit.
 6. System creates a gate transaction.
 7. System updates container status.
@@ -264,11 +395,11 @@ Container cannot exit:
 1. System displays reason.
 2. Operation is blocked until resolved.
 
-## UC-07 - Manage Vessel Visits
+## UC-10 - Manage Vessel Visits
 
 ### Description
 
-Terminal Operator manages vessel visits, imports CSV files and confirms vessel operations.
+Terminal Operator manages vessel visits, imports CSV files and confirms vessel operations. This use case includes the CSV discharge/loading lists and the confirmation of discharge/loading operations.
 
 ### Actor
 
@@ -276,7 +407,7 @@ Terminal Operator
 
 ### Precondition
 
-Terminal Operator is authenticated.
+Terminal Operator is authenticated. For CSV import, a list is received from the vessel agent or line.
 
 ### Main flow
 
@@ -297,10 +428,11 @@ Terminal Operator is authenticated.
 8. System validates CSV rows.
 9. System saves uploaded file record.
 10. System creates vessel visit container records.
-11. Terminal Operator confirms discharge operations.
-12. System updates container status/location and creates events.
+11. Terminal Operator confirms discharge operations and sets area/position after discharge.
+12. System updates container status/location and creates `DISCHARGED` events.
 13. Terminal Operator confirms loading operations.
-14. System updates operation status and creates events.
+14. System updates operation status and creates `LOADED` events.
+15. System displays confirmation.
 
 ### Alternative flows
 
@@ -317,3 +449,11 @@ Invalid CSV:
 Missing location after discharge:
 
 1. System asks Terminal Operator to complete area and position.
+
+## 3. Removed use case
+
+`Manage Stowage Plan` is not implemented as a separate use case.
+
+Reason:
+
+The official stowage plan is created or coordinated outside the terminal application, by the vessel side, shipping line, chief officer, commander or agent. MaritimeOps only manages the operational loading/discharge lists and terminal confirmations.

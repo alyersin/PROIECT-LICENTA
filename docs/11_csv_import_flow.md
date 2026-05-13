@@ -232,6 +232,8 @@ Event:
 
 ```txt
 event_type = DISCHARGED
+event_area = selected discharge area
+event_position = selected discharge position
 ```
 
 ## 12. Confirm loading
@@ -298,3 +300,10 @@ vessel visit
 ```
 
 The parsed operational data is saved in `vessel_visit_containers`.
+
+
+## 16. Relation with Manage Vessel Visits use case
+
+CSV import is not a separate high-level actor use case in the final diagram. It is part of `Manage Vessel Visits`.
+
+The Terminal Operator imports the loading/discharge lists received from the vessel agent or shipping line. MaritimeOps does not create the official stowage plan; it only imports operational lists and records terminal confirmations.

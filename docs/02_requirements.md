@@ -20,7 +20,30 @@ System redirects user to the correct dashboard
 
 The system must allow authenticated users to log out.
 
-### FR-03 - Role-based access
+### FR-03 - View profile
+
+The system must allow an authenticated user to view profile information.
+
+Displayed data:
+
+- full name
+- email
+- role
+- account status
+
+### FR-04 - Change password
+
+The system must allow an authenticated user to change their own password.
+
+The system must:
+
+- ask for current password
+- ask for new password
+- validate the current password with bcrypt
+- validate the new password rules
+- update `users.password_hash`
+
+### FR-05 - Role-based access
 
 The system must restrict access based on user role.
 
@@ -33,25 +56,26 @@ TERMINAL_OPERATOR
 CUSTOMER_AGENT
 ```
 
-### FR-04 - Manage users
+### FR-06 - Manage users
 
 The Administrator must be able to:
 
 - create user accounts
-- edit user details
-- reset passwords
-- activate/deactivate accounts
-- assign a role to each user
+- update user details
+- logically delete/deactivate accounts
+- assign/change a role for each user
 
-### FR-05 - View containers
+Delete User is implemented as logical deactivation through `users.is_active`, not as physical deletion.
+
+### FR-07 - View containers
 
 Authorized users must be able to view containers.
 
 Gate Operator and Terminal Operator can view operational container data.
 
-Customer / Line Agent can view only containers associated with their customer account.
+Customer / Line Agent can view only containers associated with the customer/line context allowed in the application.
 
-### FR-06 - Search and filter containers
+### FR-08 - Search and filter containers
 
 The system must support searching and filtering containers by:
 
@@ -62,7 +86,7 @@ The system must support searching and filtering containers by:
 - size
 - reefer status
 
-### FR-07 - View container details
+### FR-09 - View container details
 
 The system must display container details:
 
@@ -77,7 +101,7 @@ The system must display container details:
 - customer
 - operational history
 
-### FR-08 - Update container location
+### FR-10 - Update container location
 
 The Terminal Operator must be able to update a container's current area and current position when needed.
 
@@ -91,9 +115,30 @@ Empty Yard
 ISO Tanks / IMDG Cargo Area
 ```
 
-Every location update must create a container event.
+Every location update must create a container event with:
 
-### FR-09 - Register Gate IN
+```txt
+event_type = LOCATION_UPDATED
+event_area = selected area
+event_position = selected position
+```
+
+### FR-11 - Validate container
+
+The system must validate a container before Gate IN and Gate OUT operations.
+
+Validate Container is a logical use case included by Register Gate IN and Register Gate OUT. It is not a separate database table.
+
+The validation checks:
+
+- container number format
+- required fields
+- container existence or possibility to create a new record
+- current status
+- operation permission
+- valid area and position when required
+
+### FR-12 - Register Gate IN
 
 The Gate Operator must be able to register the entry of a container into the terminal.
 
@@ -110,12 +155,13 @@ Gate IN data:
 
 After Gate IN, the system must:
 
+- include Validate Container
 - create a gate transaction
 - update container status
 - update container area/position
 - create a container event
 
-### FR-10 - Register Gate OUT
+### FR-13 - Register Gate OUT
 
 The Gate Operator must be able to register the exit of a container from the terminal.
 
@@ -130,11 +176,12 @@ Gate OUT data:
 
 After Gate OUT, the system must:
 
+- include Validate Container
 - create a gate transaction
 - update container status
 - create a container event
 
-### FR-11 - Manage vessels
+### FR-14 - Manage vessels
 
 The Terminal Operator must be able to create and manage vessels.
 
@@ -143,7 +190,7 @@ Vessel data:
 - vessel name
 - IMO number
 
-### FR-12 - Manage vessel visits
+### FR-15 - Manage vessel visits
 
 The Terminal Operator must be able to create and manage vessel visits.
 
@@ -157,7 +204,7 @@ Vessel visit data:
 - berth
 - status
 
-### FR-13 - Import discharge list CSV
+### FR-16 - Import discharge list CSV
 
 The Terminal Operator must be able to upload a discharge list CSV for a vessel visit.
 
@@ -168,7 +215,7 @@ The system must:
 - create imported file record
 - create vessel visit container records with operation type `DISCHARGE`
 
-### FR-14 - Import loading list CSV
+### FR-17 - Import loading list CSV
 
 The Terminal Operator must be able to upload a loading list CSV for a vessel visit.
 
@@ -179,7 +226,7 @@ The system must:
 - create imported file record
 - create vessel visit container records with operation type `LOAD`
 
-### FR-15 - Confirm discharge
+### FR-18 - Confirm discharge
 
 The Terminal Operator must be able to confirm that a container has been discharged from a vessel.
 
@@ -189,8 +236,9 @@ After confirmation, the system must:
 - update container status
 - set area and position
 - create a `DISCHARGED` event
+- save `event_area` and `event_position` in the event history
 
-### FR-16 - Confirm loading
+### FR-19 - Confirm loading
 
 The Terminal Operator must be able to confirm that a container has been loaded on a vessel.
 
@@ -200,7 +248,7 @@ After confirmation, the system must:
 - update container status
 - create a `LOADED` event
 
-### FR-17 - Container event history
+### FR-20 - Container event history
 
 The system must store operational events for containers.
 
@@ -230,6 +278,7 @@ app/
 components/
 lib/
 repositories/
+services/
 database/
 ```
 
@@ -266,6 +315,7 @@ The following are not required for this version:
 - real-time crane control
 - yard slot optimization
 - advanced stowage planning
+- separate Manage Stowage Plan module
 - payment module
 - public API
 - Kubernetes

@@ -21,6 +21,8 @@ The database supports:
 - uploaded CSV files
 - container event history
 
+This document is aligned with the updated ERD and the updated use case documentation.
+
 ## 2. Final table list
 
 | No. | Table | Purpose |
@@ -47,6 +49,7 @@ The following are not modeled:
 - internal container moves table
 - stowage planning module
 - multiple roles per user
+- separate validation table for Validate Container
 
 The container location is stored directly in:
 
@@ -67,6 +70,8 @@ ISO Tanks / IMDG Cargo Area
 
 The position is textual and simplified. The system does not automatically manage stacking levels, but the same position can represent a container stack. For example, B2-05 can be read as block/sector B2, position 05. If multiple containers are registered with the same position, they can be conceptually interpreted as being stacked in the same location. The application does not automatically calculate the physical tier and does not verify if the position is free.
 
+Delete User is implemented as logical deactivation through `users.is_active`, not as physical deletion.
+
 ## 4. roles
 
 Stores user roles.
@@ -76,8 +81,8 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_role | SERIAL PRIMARY KEY | Unique role id |
-| code | VARCHAR UNIQUE | ADMIN, GATE_OPERATOR, TERMINAL_OPERATOR, CUSTOMER_AGENT |
-| name | VARCHAR | Display name |
+| code | VARCHAR UNIQUE NOT NULL | ADMIN, GATE_OPERATOR, TERMINAL_OPERATOR, CUSTOMER_AGENT |
+| name | VARCHAR NOT NULL | Display name |
 
 Relationship:
 
@@ -94,24 +99,24 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_user | SERIAL PRIMARY KEY | Unique user id |
-| id_role | INTEGER FK | References roles |
-| id_customer | INTEGER FK NULL | Used for Customer / Line Agent |
-| email | VARCHAR UNIQUE | Login email |
-| password_hash | TEXT | bcrypt password hash |
-| full_name | VARCHAR | User full name |
-| is_active | BOOLEAN | Account status |
-| created_at | TIMESTAMP | Creation date |
+| id_role | INTEGER FK NOT NULL | References roles |
+| email | VARCHAR UNIQUE NOT NULL | Login email |
+| password_hash | TEXT NOT NULL | bcrypt password hash |
+| full_name | VARCHAR NOT NULL | User full name |
+| is_active | BOOLEAN NOT NULL | Account status |
+| created_at | TIMESTAMP NOT NULL | Creation date |
 
 Relationships:
 
 ```txt
 users N -- 1 roles
-users N -- 1 customers
 users 1 -- N gate_transactions
 users 1 -- N vessel_visits
 users 1 -- N uploaded_files
 users 1 -- N container_events
 ```
+
+For the simplified version, each user has one role. Therefore, `User_Roles` is not required.
 
 ## 6. customers
 
@@ -122,15 +127,14 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_customer | SERIAL PRIMARY KEY | Unique customer id |
-| name | VARCHAR | Customer/agent/shipping line name |
-| type | VARCHAR | shipping_line, client, agent |
-| created_at | TIMESTAMP | Creation date |
+| name | VARCHAR NOT NULL | Customer/agent/shipping line name |
+| type | VARCHAR NOT NULL | shipping_line, client, agent |
+| created_at | TIMESTAMP NOT NULL | Creation date |
 
 Relationship:
 
 ```txt
 customers 1 -- N containers
-customers 1 -- N users
 ```
 
 ## 7. containers
@@ -142,15 +146,15 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_container | SERIAL PRIMARY KEY | Unique container id |
-| container_no | VARCHAR UNIQUE | Example: MSCU1234567 |
-| iso_type | VARCHAR | ISO type |
-| size_ft | INTEGER | 20, 40, 45 |
-| status | VARCHAR | Operational status |
-| is_reefer | BOOLEAN | Reefer flag |
-| gross_weight_kg | NUMERIC | Gross weight |
-| current_area | VARCHAR | Import Yard, Export Yard, Reefer Area, Empty Yard, ISO Tanks / IMDG Cargo Area |
-| current_position | VARCHAR | Textual position, example: B2-05 |
-| id_customer | INTEGER FK | Customer/agent/shipping line |
+| container_no | VARCHAR UNIQUE NOT NULL | Example: MSCU1234567 |
+| iso_type | VARCHAR NULL | ISO type |
+| size_ft | INTEGER NULL | 20, 40, 45 |
+| status | VARCHAR NOT NULL | Operational status |
+| is_reefer | BOOLEAN NOT NULL | Reefer flag |
+| gross_weight_kg | NUMERIC NULL | Gross weight |
+| current_area | VARCHAR NULL | Import Yard, Export Yard, Reefer Area, Empty Yard, ISO Tanks / IMDG Cargo Area |
+| current_position | VARCHAR NULL | Textual position, example: B2-05 |
+| id_customer | INTEGER FK NULL | Customer/agent/shipping line. Can be null when information is not available initially |
 
 Relationships:
 
@@ -170,12 +174,12 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_gate_transaction | SERIAL PRIMARY KEY | Unique transaction id |
-| id_container | INTEGER FK | Container |
-| id_user | INTEGER FK | Gate Operator |
-| transaction_type | VARCHAR | GATE_IN or GATE_OUT |
-| truck_no | VARCHAR | Truck number |
-| transaction_time | TIMESTAMP | Date/time |
-| container_condition | VARCHAR | empty or full |
+| id_container | INTEGER FK NOT NULL | Container |
+| id_user | INTEGER FK NOT NULL | Gate Operator |
+| transaction_type | VARCHAR NOT NULL | GATE_IN or GATE_OUT |
+| truck_no | VARCHAR NOT NULL | Truck number |
+| transaction_time | TIMESTAMP NOT NULL | Date/time |
+| container_condition | VARCHAR NULL | empty or full |
 | seal_no | VARCHAR NULL | Seal number |
 | destination | VARCHAR NULL | Mostly for Gate OUT |
 | area_after | VARCHAR NULL | Area after Gate IN |
@@ -199,8 +203,8 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_vessel | SERIAL PRIMARY KEY | Unique vessel id |
-| name | VARCHAR | Vessel name |
-| imo | VARCHAR UNIQUE | IMO number |
+| name | VARCHAR NOT NULL | Vessel name |
+| imo | VARCHAR UNIQUE NULL | IMO number |
 
 Relationship:
 
@@ -217,15 +221,15 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_vessel_visit | SERIAL PRIMARY KEY | Unique visit id |
-| id_vessel | INTEGER FK | Vessel |
-| id_created_by | INTEGER FK | Terminal Operator |
+| id_vessel | INTEGER FK NOT NULL | Vessel |
+| id_created_by | INTEGER FK NOT NULL | Terminal Operator |
 | inbound_voyage_no | VARCHAR NULL | Inbound voyage |
 | outbound_voyage_no | VARCHAR NULL | Outbound voyage |
-| eta | TIMESTAMP | Estimated time of arrival |
-| etd | TIMESTAMP | Estimated time of departure |
+| eta | TIMESTAMP NULL | Estimated time of arrival |
+| etd | TIMESTAMP NULL | Estimated time of departure |
 | berth | VARCHAR NULL | Berth |
-| status | VARCHAR | planned, arrived, in_operation, completed, cancelled |
-| created_at | TIMESTAMP | Creation date |
+| status | VARCHAR NOT NULL | planned, arrived, in_operation, completed, cancelled |
+| created_at | TIMESTAMP NOT NULL | Creation date |
 
 Relationships:
 
@@ -246,10 +250,10 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_vessel_visit_container | SERIAL PRIMARY KEY | Unique id |
-| id_vessel_visit | INTEGER FK | Vessel visit |
-| id_container | INTEGER FK | Container |
-| operation_type | VARCHAR | DISCHARGE or LOAD |
-| operation_status | VARCHAR | planned, confirmed, cancelled |
+| id_vessel_visit | INTEGER FK NOT NULL | Vessel visit |
+| id_container | INTEGER FK NOT NULL | Container |
+| operation_type | VARCHAR NOT NULL | DISCHARGE or LOAD |
+| operation_status | VARCHAR NOT NULL | planned, confirmed, cancelled |
 | port | VARCHAR NULL | Port from CSV |
 | weight_kg | NUMERIC NULL | Weight from CSV |
 | area_after | VARCHAR NULL | Area after discharge |
@@ -271,11 +275,11 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_file | SERIAL PRIMARY KEY | Unique file id |
-| id_vessel_visit | INTEGER FK | Vessel visit |
-| id_uploaded_by | INTEGER FK | User who uploaded |
-| file_type | VARCHAR | DISCHARGE_LIST or LOADING_LIST |
-| file_name | VARCHAR | Original file name |
-| uploaded_at | TIMESTAMP | Upload date |
+| id_vessel_visit | INTEGER FK NOT NULL | Vessel visit |
+| id_uploaded_by | INTEGER FK NOT NULL | User who uploaded |
+| file_type | VARCHAR NOT NULL | DISCHARGE_LIST or LOADING_LIST |
+| file_name | VARCHAR NOT NULL | Original file name |
+| uploaded_at | TIMESTAMP NOT NULL | Upload date |
 
 Relationships:
 
@@ -293,13 +297,15 @@ Fields:
 | Field | Type | Notes |
 |---|---|---|
 | id_container_event | SERIAL PRIMARY KEY | Unique event id |
-| id_container | INTEGER FK | Container |
-| id_user | INTEGER FK | User |
+| id_container | INTEGER FK NOT NULL | Container |
+| id_user | INTEGER FK NOT NULL | User |
 | id_vessel_visit | INTEGER FK NULL | Optional vessel visit |
 | id_gate_transaction | INTEGER FK NULL | Optional gate transaction |
-| event_type | VARCHAR | Event type |
-| event_time | TIMESTAMP | Event time |
-| description | TEXT | Event description |
+| event_type | VARCHAR NOT NULL | Event type |
+| event_time | TIMESTAMP NOT NULL | Event time |
+| event_area | VARCHAR NULL | Area associated with the event |
+| event_position | VARCHAR NULL | Position associated with the event |
+| description | TEXT NOT NULL | Event description |
 
 Relationships:
 
@@ -327,6 +333,16 @@ CUSTOMER_AGENT
 shipping_line
 client
 agent
+```
+
+### containers.current_area
+
+```txt
+Import Yard
+Export Yard
+Reefer Area
+Empty Yard
+ISO Tanks / IMDG Cargo Area
 ```
 
 ### gate_transactions.transaction_type
@@ -388,11 +404,48 @@ VESSEL_VISIT_ASSIGNED
 
 ## 15. Use case to table mapping
 
-| Use case | Tables |
-|---|---|
-| Login / Logout | users, roles |
-| Manage Users | users, roles, customers |
-| View Containers | containers, customers, container_events, vessel_visit_containers, gate_transactions |
-| Register Gate IN | containers, gate_transactions, container_events |
-| Register Gate OUT | containers, gate_transactions, container_events |
-| Manage Vessel Visits | vessels, vessel_visits, vessel_visit_containers, uploaded_files, containers, container_events |
+| Use case | Tables | Notes |
+|---|---|---|
+| Login / Logout | users, roles | Authentication uses email, password_hash and role |
+| View Profile | users, roles | Displays authenticated user data |
+| Change Password | users | Updates password_hash |
+| Manage Users | users, roles | Includes Create User, Update User, Delete User and Assign / Change Role |
+| Create User | users, roles | Creates a new account and initial role |
+| Update User | users, roles | Updates user data |
+| Delete User | users | Logical delete through is_active |
+| Assign / Change Role | users, roles | Updates users.id_role |
+| View Containers | containers, customers, container_events, vessel_visit_containers, gate_transactions | Displays containers and history |
+| Validate Container | containers, gate_transactions, vessel_visit_containers | Logical validation, no separate table |
+| Register Gate IN | containers, gate_transactions, container_events | Includes Validate Container |
+| Register Gate OUT | containers, gate_transactions, container_events | Includes Validate Container |
+| Manage Vessel Visits | vessels, vessel_visits, vessel_visit_containers, uploaded_files, containers, container_events | Manages visits, CSV and loading/discharge confirmations |
+
+## 16. Explanation of relationship loops
+
+Some loops remain in the ERD because `container_events` is used for traceability.
+
+Example:
+
+```txt
+containers -> gate_transactions -> container_events -> containers
+```
+
+This is acceptable because:
+
+- `gate_transactions` stores the concrete Gate IN or Gate OUT transaction.
+- `container_events` stores the historical event shown in the container timeline.
+- `id_gate_transaction` in `container_events` is optional and used only when the event comes from a gate transaction.
+
+Another example:
+
+```txt
+vessel_visits -> vessel_visit_containers -> containers -> container_events -> vessel_visits
+```
+
+This is acceptable because:
+
+- `vessel_visit_containers` stores the planned/confirmed vessel operation.
+- `container_events` stores the history event generated after confirmation.
+- `id_vessel_visit` in `container_events` is optional and used only when the event is related to a vessel visit.
+
+These loops do not mean duplicated entities. They are used to preserve operational traceability.

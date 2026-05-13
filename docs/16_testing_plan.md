@@ -64,14 +64,47 @@ Session is closed.
 User is redirected to login page.
 ```
 
-## 4. Admin tests
+## 4. Profile and password tests
+
+### View profile
+
+Steps:
+
+1. Log in with any role.
+2. Open View Profile.
+
+Expected result:
+
+```txt
+Full name, email, role and account status are displayed.
+```
+
+### Change password
+
+Steps:
+
+1. Log in with any role.
+2. Open Change Password.
+3. Enter current password and new password.
+4. Save.
+
+Expected result:
+
+```txt
+Password hash is updated.
+User can log in with the new password.
+```
+
+## 5. Admin tests
 
 ### Create user
 
 Steps:
 
 1. Login as admin.
-2. Open Manage Users.
+2. Open Manage Users
+View Profile
+Change Password.
 3. Create a new user.
 4. Select role.
 5. Save.
@@ -99,7 +132,7 @@ Expected result:
 Inactive user cannot log in.
 ```
 
-## 5. Container tests
+## 6. Container tests
 
 ### View containers
 
@@ -141,7 +174,25 @@ Container details are displayed.
 Operational history is displayed.
 ```
 
-## 6. Gate IN tests
+## 7. Validate Container tests
+
+### Validate container before Gate IN
+
+Steps:
+
+1. Login as Gate Operator.
+2. Open Gate IN.
+3. Enter incomplete or invalid container data.
+4. Submit.
+
+Expected result:
+
+```txt
+Validate Container blocks the operation and displays errors.
+No gate transaction is created.
+```
+
+## 8. Gate IN tests
 
 ### Successful Gate IN
 
@@ -175,7 +226,7 @@ Validation error is displayed.
 No database insert is made.
 ```
 
-## 7. Gate OUT tests
+## 9. Gate OUT tests
 
 ### Successful Gate OUT
 
@@ -208,7 +259,7 @@ System displays error.
 Operation is not saved.
 ```
 
-## 8. Vessel visit tests
+## 10. Vessel visit tests
 
 ### Create vessel visit
 
@@ -240,7 +291,7 @@ Expected result:
 Validation error is displayed.
 ```
 
-## 9. CSV import tests
+## 11. CSV import tests
 
 ### Import discharge list
 
@@ -287,7 +338,7 @@ System displays validation error.
 Rows are not saved.
 ```
 
-## 10. Confirm discharge tests
+## 12. Confirm discharge tests
 
 Steps:
 
@@ -303,9 +354,10 @@ operation_status becomes confirmed.
 Container status is updated.
 Container location is updated.
 DISCHARGED event is created.
+event_area and event_position are saved.
 ```
 
-## 11. Confirm loading tests
+## 13. Confirm loading tests
 
 Steps:
 
@@ -321,7 +373,7 @@ Container status is updated.
 LOADED event is created.
 ```
 
-## 12. Permission tests
+## 14. Permission tests
 
 ### Gate Operator cannot manage users
 
@@ -349,7 +401,7 @@ Expected result:
 Only associated containers are visible.
 ```
 
-## 13. Deployment tests
+## 15. Deployment tests
 
 Steps:
 

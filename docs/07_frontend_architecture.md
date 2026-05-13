@@ -27,6 +27,10 @@ src/
       page.js
     dashboard/
       page.js
+    profile/
+      page.js
+    change-password/
+      page.js
     admin/
       users/
         page.js
@@ -74,6 +78,7 @@ src/
       Modal.jsx
     forms/
       LoginForm.jsx
+      ChangePasswordForm.jsx
       UserForm.jsx
       GateInForm.jsx
       GateOutForm.jsx
@@ -120,6 +125,33 @@ Purpose:
 - display basic statistics
 - show recent operational events
 
+### Profile page
+
+Path:
+
+```txt
+/profile
+```
+
+Purpose:
+
+- show authenticated user information
+- show full name, email, role and account status
+
+### Change password page
+
+Path:
+
+```txt
+/change-password
+```
+
+Purpose:
+
+- allow authenticated user to change their own password
+- validate current password
+- save a new password hash
+
 ### Admin users page
 
 Path:
@@ -132,9 +164,9 @@ Purpose:
 
 - list users
 - create users
-- edit users
-- activate/deactivate users
-- reset passwords
+- update users
+- deactivate users as logical Delete User
+- assign/change roles
 
 ### Containers page
 
@@ -275,6 +307,7 @@ Forms should be separated by feature:
 
 ```txt
 LoginForm
+ChangePasswordForm
 UserForm
 GateInForm
 GateOutForm
@@ -395,3 +428,14 @@ Gate out containers
 - avoid too much business logic inside JSX
 - keep permissions centralized
 - show clear messages
+
+
+## 11. Use case alignment
+
+The frontend must reflect the final Use Case diagram:
+
+- Login, Logout, View Profile and Change Password belong to the general `User` actor.
+- Administrator has Manage Users, which includes Create User, Update User, Delete User and Assign / Change Role.
+- Gate IN and Gate OUT include Validate Container as a logical validation step.
+- Terminal Operator manages vessel visits, CSV import and loading/discharge confirmations.
+- Manage Stowage Plan is not a separate page in the current build.
