@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
-import Input from "@/components/ui/Input";
-import { TERMINAL_AREAS } from "@/lib/constants";
+import { TERMINAL_AREAS, TERMINAL_POSITIONS_BY_AREA } from "@/lib/constants";
 
 export default function UpdateLocationForm({ container }) {
   const router = useRouter();
@@ -24,6 +23,14 @@ export default function UpdateLocationForm({ container }) {
     setForm((current) => ({
       ...current,
       [name]: value,
+    }));
+  }
+
+  function updateArea(value) {
+    setForm((current) => ({
+      ...current,
+      current_area: value,
+      current_position: "",
     }));
   }
 
@@ -56,6 +63,9 @@ export default function UpdateLocationForm({ container }) {
     router.refresh();
   }
 
+  const availablePositions = TERMINAL_POSITIONS_BY_AREA[form.current_area] || [];
+  const hasCustomPosition = form.current_position && !availablePositions.includes(form.current_position);
+
   return (
     <form className="app-form" onSubmit={handleSubmit}>
       {formError ? <div className="app-alert app-alert-danger">{formError}</div> : null}
@@ -64,7 +74,7 @@ export default function UpdateLocationForm({ container }) {
       <Select
         label="Current area"
         value={form.current_area}
-        onChange={(event) => updateField("current_area", event.target.value)}
+        onChange={(event) => updateArea(event.target.value)}
         error={errors.current_area}
         required
       >
@@ -76,14 +86,23 @@ export default function UpdateLocationForm({ container }) {
         ))}
       </Select>
 
-      <Input
+      <Select
         label="Current position"
         value={form.current_position}
         onChange={(event) => updateField("current_position", event.target.value)}
         error={errors.current_position}
-        placeholder="Example: B2-05"
         required
-      />
+      >
+        <option value="">Select position</option>
+        {hasCustomPosition ? (
+          <option value={form.current_position}>{form.current_position}</option>
+        ) : null}
+        {availablePositions.map((position) => (
+          <option key={position} value={position}>
+            {position}
+          </option>
+        ))}
+      </Select>
 
       <div className="app-form-actions">
         <Button type="submit" disabled={saving}>

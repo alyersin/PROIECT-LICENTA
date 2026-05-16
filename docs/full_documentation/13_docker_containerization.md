@@ -61,7 +61,7 @@ services:
     container_name: maritimeops-web
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     env_file:
       - .env
     depends_on:
@@ -77,8 +77,8 @@ services:
       POSTGRES_PASSWORD: maritimeops_password
     volumes:
       - maritimeops_pgdata:/var/lib/postgresql/data
-    expose:
-      - "5432"
+    ports:
+      - "5433:5432"
 
 volumes:
   maritimeops_pgdata:
@@ -86,11 +86,19 @@ volumes:
 
 ## 5. Environment variables
 
-Example `.env`:
+Example `.env` for full Docker Compose:
 
 ```txt
 DATABASE_URL=postgres://maritimeops_user:maritimeops_password@db:5432/maritimeops_db
-NEXTAUTH_SECRET=change_this_secret
+NEXTAUTH_SECRET=change_this_secret_123
+NEXTAUTH_URL=http://localhost:3001
+```
+
+Example `.env` for local Next.js with PostgreSQL running in Docker:
+
+```txt
+DATABASE_URL=postgres://maritimeops_user:maritimeops_password@localhost:5433/maritimeops_db
+NEXTAUTH_SECRET=change_this_secret_123
 NEXTAUTH_URL=http://localhost:3000
 ```
 
@@ -155,19 +163,19 @@ SELECT * FROM users;
 From server:
 
 ```txt
-http://localhost:3000
+http://localhost:3001
 ```
 
 From another machine in local network:
 
 ```txt
-http://server-ip:3000
+http://server-ip:3001
 ```
 
 Example:
 
 ```txt
-http://192.168.1.100:3000
+http://192.168.1.100:3001
 ```
 
 ## 15. Why Docker is useful
@@ -185,7 +193,7 @@ Docker makes deployment simpler because:
 ```txt
 Browser
    ↓
-http://server-ip:3000
+http://server-ip:3001
    ↓
 web container - Next.js
    ↓

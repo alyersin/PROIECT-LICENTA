@@ -1,8 +1,6 @@
 export function getNavigationForRole(roleCode) {
   const baseLinks = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/profile", label: "Profile" },
-    { href: "/change-password", label: "Change Password" },
   ];
 
   if (roleCode === "ADMIN") {

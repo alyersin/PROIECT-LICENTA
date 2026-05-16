@@ -11,7 +11,7 @@ The deployment is intended for a licenta project and local demonstration.
 ```txt
 Client browser
    ↓
-http://server-ip:3000
+http://server-ip:3001
    ↓
 Ubuntu Linux Server
    ↓
@@ -62,24 +62,32 @@ cp .env.example .env
 nano .env
 ```
 
-Example:
+Example for full Docker Compose:
 
 ```txt
 DATABASE_URL=postgres://maritimeops_user:maritimeops_password@db:5432/maritimeops_db
-NEXTAUTH_SECRET=change_this_secret
+NEXTAUTH_SECRET=change_this_secret_123
+NEXTAUTH_URL=http://localhost:3001
+```
+
+Example for local Next.js with PostgreSQL running in Docker:
+
+```txt
+DATABASE_URL=postgres://maritimeops_user:maritimeops_password@localhost:5433/maritimeops_db
+NEXTAUTH_SECRET=change_this_secret_123
 NEXTAUTH_URL=http://localhost:3000
 ```
 
 For LAN access, set:
 
 ```txt
-NEXTAUTH_URL=http://server-ip:3000
+NEXTAUTH_URL=http://server-ip:3001
 ```
 
 Example:
 
 ```txt
-NEXTAUTH_URL=http://192.168.1.100:3000
+NEXTAUTH_URL=http://192.168.1.100:3001
 ```
 
 ## 7. Start application
@@ -118,13 +126,13 @@ docker exec -i maritimeops-db psql -U maritimeops_user -d maritimeops_db < datab
 From the server:
 
 ```txt
-http://localhost:3000
+http://localhost:3001
 ```
 
 From another computer in the same network:
 
 ```txt
-http://server-ip:3000
+http://server-ip:3001
 ```
 
 ## 12. Configure UFW
@@ -133,7 +141,7 @@ Allow SSH and app port:
 
 ```bash
 sudo ufw allow 22
-sudo ufw allow 3000
+sudo ufw allow 3001
 sudo ufw enable
 sudo ufw status
 ```
@@ -207,7 +215,7 @@ If the application is deployed publicly, HTTPS should be added.
 
 ## 19. No Nginx requirement
 
-Nginx is not required because the application can be accessed directly on port 3000.
+Nginx is not required because the application can be accessed directly on port 3001 in the current Compose setup.
 
 Nginx may be added later if needed for:
 

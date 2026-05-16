@@ -58,6 +58,7 @@ CREATE TABLE customers (
 CREATE TABLE users (
   id_user SERIAL PRIMARY KEY,
   id_role INTEGER NOT NULL REFERENCES roles(id_role) ON DELETE RESTRICT,
+  id_customer INTEGER NULL REFERENCES customers(id_customer) ON DELETE SET NULL,
   email VARCHAR(150) NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   full_name VARCHAR(150) NOT NULL,
@@ -222,6 +223,7 @@ The position is textual and simplified. The system does not automatically manage
 ```sql
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(id_role);
+CREATE INDEX idx_users_customer ON users(id_customer);
 CREATE INDEX idx_containers_container_no ON containers(container_no);
 CREATE INDEX idx_containers_status ON containers(status);
 CREATE INDEX idx_containers_current_area ON containers(current_area);
@@ -257,6 +259,8 @@ INSERT INTO customers (name, type) VALUES
 
 Users require bcrypt password hashes. The hash should be generated from the application or from a small script.
 
+`users.id_customer` is nullable. It is used only for `CUSTOMER_AGENT` users to restrict container visibility to the same customer. It should remain `NULL` for `ADMIN`, `GATE_OPERATOR`, and `TERMINAL_OPERATOR` users. This does not change the final 10-table ERD model because it is only a nullable foreign key inside the existing `users` table.
+
 Example users:
 
 ```txt
@@ -264,6 +268,12 @@ admin@maritimeops.local
 gate@maritimeops.local
 terminal@maritimeops.local
 customer@maritimeops.local
+```
+
+Intended demo password for all demo users:
+
+```txt
+admin123
 ```
 
 ## 7. Running schema.sql in Docker

@@ -12,7 +12,6 @@ export default function GateOutForm() {
   const [form, setForm] = useState({
     container_no: "",
     truck_no: "",
-    transaction_time: "",
     destination: "",
     seal_no: "",
     observations: "",
@@ -58,7 +57,6 @@ export default function GateOutForm() {
     setForm({
       container_no: "",
       truck_no: "",
-      transaction_time: "",
       destination: "",
       seal_no: "",
       observations: "",
@@ -90,14 +88,6 @@ export default function GateOutForm() {
         />
 
         <Input
-          label="Date and time"
-          type="datetime-local"
-          value={form.transaction_time}
-          onChange={(event) => updateField("transaction_time", event.target.value)}
-          error={errors.transaction_time}
-        />
-
-        <Input
           label="Destination"
           value={form.destination}
           onChange={(event) => updateField("destination", event.target.value)}
@@ -124,6 +114,7 @@ export default function GateOutForm() {
         <Button type="submit" disabled={saving}>
           {saving ? "Saving..." : "Register Gate OUT"}
         </Button>
+        <p className="app-form-note">Transaction time is recorded automatically when the form is submitted.</p>
       </div>
     </form>
   );

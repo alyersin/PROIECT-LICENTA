@@ -41,6 +41,7 @@ export default function ContainersTable({ containers = [], basePath = "/containe
             <th>Size</th>
             <th>ISO Type</th>
             <th>Status</th>
+            <th>Condition</th>
             <th>Area</th>
             <th>Position</th>
             <th>Customer</th>
@@ -59,6 +60,7 @@ export default function ContainersTable({ containers = [], basePath = "/containe
                   {container.status}
                 </Badge>
               </td>
+              <td>{container.container_condition || "-"}</td>
               <td>{container.current_area || "-"}</td>
               <td>{container.current_position || "-"}</td>
               <td>{container.customer_name || "-"}</td>

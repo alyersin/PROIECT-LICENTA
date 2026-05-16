@@ -22,6 +22,10 @@ export default async function ContainerDetailsPage({ params }) {
     redirect("/login");
   }
 
+  if (!["GATE_OPERATOR", "TERMINAL_OPERATOR"].includes(currentUser.role_code)) {
+    redirect("/dashboard");
+  }
+
   const container = await getContainerById(id);
 
   if (!container) {

@@ -11,10 +11,10 @@ Important current findings:
 - `AGENTS.md` references docs such as `docs/00_README.md`, but the numbered documentation files are actually under `docs/full_documentation/`.
 - `papaparse` is installed in `package.json`.
 - `Dockerfile`, `docker-compose.yml`, and `.dockerignore` exist.
-- CSV import exists, but it is a textarea-based CSV content form, not a physical file picker workflow.
+- CSV import supports CSV file selection, pasted CSV content, sample loading and preview.
 - Vessel discharge/load confirmation exists, but discharge confirmation cannot collect missing location values interactively from the operations table.
 - Dashboard metrics are data-backed through `src/repositories/dashboard.repository.js`.
-- Dashboard recent event links always point to `/containers/[id]`, which is correct for Gate and Terminal users but wrong for Customer Agent users and not accessible for Admin users.
+- Dashboard recent event links are role-aware: Gate and Terminal users link to `/containers/[id]`, Customer Agent users link to `/my-containers/[id]`, and Admin event rows do not link to inaccessible container detail pages.
 - Dynamic routes use `await params`, and pages with query parameters use `await searchParams`, which is compatible with current Next.js App Router async params behavior.
 
 ## 2. Project stack
@@ -167,7 +167,7 @@ Environment:
 
 - `.env.example` exists.
 - It defines `DATABASE_URL`, `NEXTAUTH_SECRET`, and `NEXTAUTH_URL`.
-- The example `DATABASE_URL` uses host `db`, which matches Docker Compose networking.
+- It documents two modes: local Next.js with PostgreSQL exposed from Docker on `localhost:5433`, and full Docker Compose with the web container using `db:5432`.
 - No real `.env` file was inspected.
 
 Docker:
@@ -188,7 +188,8 @@ Docker Compose status:
 
 - Defines `web` and `db` services.
 - Uses `postgres:16`.
-- Publishes web port `3000:3000`.
+- Publishes web port `3001:3000`.
+- Publishes database port `5433:5432`.
 - Uses a persistent `maritimeops_pgdata` volume.
 
 Deployment gaps by inspection:
@@ -214,8 +215,10 @@ Pages found under `src/app`:
 - `/gate`
 - `/gate/in`
 - `/gate/out`
+- `/reports`
 - `/my-containers`
 - `/my-containers/[id]`
+- `/my-reports`
 - `/vessel-visits`
 - `/vessel-visits/create`
 - `/vessel-visits/[id]`
@@ -227,6 +230,8 @@ Status:
 - Protected pages redirect unauthenticated users to `/login`.
 - Role-specific pages redirect unauthorized users to `/dashboard`.
 - Navigation paths in `src/lib/navigation.js` all point to existing pages.
+- Containers and My Containers pages use instant client-side filtering and can export the currently visible rows as CSV.
+- My Containers filtering is scoped to the current Customer / Line Agent user's own containers and includes search, status, condition, area, size, ISO type and reefer filters.
 - The home page links to `/login` and `/dashboard`; `/dashboard` exists but is protected.
 
 ## 9. API routes
@@ -242,6 +247,9 @@ API routes found:
 - `/api/containers/[id]/location`
 - `/api/gate/in`
 - `/api/gate/out`
+- `/api/reports/containers`
+- `/api/reports/gate-transactions`
+- `/api/reports/vessel-visit-containers`
 - `/api/vessels`
 - `/api/vessel-visits`
 - `/api/vessel-visits/[id]`
@@ -251,7 +259,7 @@ API routes found:
 
 Status:
 
-- Auth, profile password change, users, containers, validation, gate IN/OUT, vessels, vessel visits, CSV import, and operation confirmation routes exist.
+- Auth, profile password change, users, containers, validation, gate IN/OUT, reports, vessels, vessel visits, CSV import, and operation confirmation routes exist.
 - API authorization is mostly enforced by checking `getCurrentUser()` and `role_code`.
 - Some admin API routes return `403 Forbidden` for both unauthenticated and non-admin users instead of distinguishing `401 Unauthorized`.
 
@@ -318,6 +326,7 @@ Repository files found:
 - `dashboard.repository.js`
 - `events.repository.js`
 - `gate.repository.js`
+- `reports.repository.js`
 - `roles.repository.js`
 - `uploadedFiles.repository.js`
 - `users.repository.js`
@@ -327,7 +336,7 @@ Repository files found:
 
 Status:
 
-- Repositories cover users, roles, customers, containers, events, gate transactions, vessels, vessel visits, visit operations, uploaded files, and dashboard metrics.
+- Repositories cover users, roles, customers, containers, events, gate transactions, live CSV reports, vessels, vessel visits, visit operations, uploaded files, and dashboard metrics.
 - `dashboard.repository.js` contains role-specific summary metrics and recent events queries.
 - `uploadedFiles.repository.js` tracks imported CSV records.
 - `vesselVisitContainers.repository.js` creates and confirms planned operations.
@@ -373,9 +382,7 @@ Authorization:
 
 Known issues:
 
-- `src/lib/permissions.js` has a `canViewContainer` function that allows all Customer Agents to view any container if used, while `src/services/containers.service.js` has the stricter customer-id check. Current detail pages use the stricter service function.
-- Admin dashboard recent event links point to `/containers/[id]`, but Admin cannot access `/containers/[id]`.
-- Customer dashboard recent event links also point to `/containers/[id]`, but Customer Agent users should use `/my-containers/[id]`.
+- No open container/customer visibility issue was found by static inspection. Customer Agent container access is scoped by `containers.id_customer` in list APIs, dashboard customer data, and detail page checks.
 
 ## 15. Database and seed status
 
@@ -385,7 +392,7 @@ Schema alignment:
 - `users.is_active` is present for logical delete.
 - `container_events` is present for operational history.
 - `uploaded_files` and `vessel_visit_containers` are present for CSV import and vessel operations.
-- `users.id_customer` is present to support Customer Agent access.
+- `users.id_customer` is present to support Customer Agent access and is now documented as a nullable FK to `customers`.
 
 Seed status:
 
@@ -406,7 +413,8 @@ Demo users in `seed.sql`:
 Password status:
 
 - `seed.sql` stores the same bcrypt hash for all demo users.
-- Documentation under `docs/full_documentation/12_auth_security.md` gives `admin123` as an example password, but the actual password behind the seed hash was not verified because no non-read-only command was run.
+- Demo password intended for all demo users is documented as `admin123`.
+- `seed.sql` includes comments showing how to regenerate the bcrypt hash manually if login fails.
 
 Seed gaps:
 
@@ -426,12 +434,9 @@ Implemented:
 - Customer metrics: my containers, in terminal, loaded, gate out.
 - Recent events table for operational history.
 
-Issue:
+Status:
 
-- Recent event container links are not role-aware. They always link to `/containers/[id]`.
-- This is correct for Gate Operator and Terminal Operator.
-- It is incorrect for Customer Agent, who should link to `/my-containers/[id]`.
-- It is also not accessible for Admin, because Admin does not have access to `/containers/[id]`.
+- Recent event container links are role-aware for Gate Operator, Terminal Operator, Customer Agent and Admin dashboard contexts.
 
 ## 17. UI/layout static review
 
@@ -441,7 +446,8 @@ Static UI status:
 - `globals.css` defines reusable app classes for layout, cards, forms, buttons, tables, badges, alerts, timelines, and login shell.
 - Tables use horizontal overflow wrappers.
 - Grids collapse responsively.
-- Sidebar is hidden under `900px`.
+- Sidebar is hidden under `900px`, with a mobile operational menu shown in the content area.
+- Profile, Change Password and Logout are grouped in the header account dropdown instead of the sidebar.
 
 CSS class inspection:
 
@@ -450,10 +456,10 @@ CSS class inspection:
 
 UI risks:
 
-- No mobile navigation replaces the sidebar below `900px`.
+- Mobile navigation replaces the sidebar below `900px` for operational module links.
 - The app uses a dark blue/slate-heavy palette.
 - `Card` supports an `action` prop, but `.app-card-header` is not styled as a flex header, so card header actions may not align as intended.
-- CSV import is not a real file upload UI; users paste CSV text.
+- CSV import includes file selection and pasted text input.
 - Discharge confirmation has no inline form for missing `area_after` or `position_after`.
 
 ## 18. Implemented use cases
@@ -474,6 +480,7 @@ Implemented or mostly implemented:
 - Register Gate IN
 - Register Gate OUT
 - Manage Vessel Visits
+- Export Operational Reports
 
 Manage Vessel Visits includes:
 
@@ -484,16 +491,20 @@ Manage Vessel Visits includes:
 - Confirm discharge and confirm loading actions.
 - Container events for `DISCHARGED` and `LOADED`.
 
+Export Operational Reports includes:
+
+- Gate Operator and Terminal Operator can export the currently filtered visible rows directly from `/containers`.
+- Customer / Line Agent can export the currently filtered visible rows directly from `/my-containers`.
+- Existing `/reports` and `/my-reports` pages remain available, but they are not the main export workflow and are not linked from the sidebar.
+- CSV files are generated live from existing operational tables, so no ERD, schema, seed or report-history table change is required.
+
 ## 19. Missing or incomplete features
 
 Incomplete by inspection:
 
-- CSV import is textarea-based and does not use a browser file input.
-- CSV preview is not implemented before import.
 - Discharge confirmation cannot collect missing area/position values from the operation row.
 - No seeded vessel visits or operations, so vessel visit features need manual data setup after seeding.
-- Dashboard recent event links are not role-aware.
-- No mobile authenticated navigation when sidebar is hidden.
+- Mobile authenticated navigation is available for operational module links when the sidebar is hidden.
 - No automated schema/seed execution in Docker Compose.
 - No explicit audit log outside `container_events`, which is acceptable for current scope.
 
@@ -502,7 +513,6 @@ Incomplete by inspection:
 Potential broken or suspicious paths:
 
 - Main documentation path mismatch: `AGENTS.md` references root `docs/*.md`, but actual numbered docs are under `docs/full_documentation/`.
-- Dashboard recent event links can route Admin and Customer Agent users to inaccessible `/containers/[id]` pages.
 - No missing local import target was obvious from static import inspection.
 - All navigation paths in `src/lib/navigation.js` exist.
 
@@ -560,16 +570,69 @@ Recommended next step:
 
 Run the first verification pass manually in this order:
 
-1. Confirm the intended demo password for the seeded bcrypt hash, or regenerate/update the seed hash and document the demo password clearly.
+1. Confirm login manually with the documented demo password `admin123`.
 2. Run lint/build manually to catch compile, import, serialization, and Next.js App Router issues.
 3. Run Docker Compose manually and apply `schema.sql` plus `seed.sql`.
 4. Login with each seeded role and manually test the full flows: dashboard, users, containers, gate IN/OUT, vessel visit create/import/confirm, profile, and change password.
-5. Fix the dashboard recent event link routing for Admin and Customer Agent users.
+5. Confirm role-specific container visibility manually for Gate Operator, Terminal Operator and Customer Agent users.
+
+## Documentation and Diagram Conformity Check
+
+1. Overall verdict
+
+Mostly conform. The application structure, routes, API routes, schema, seed roles, permissions and implemented flows match the final simplified MaritimeOps scope in the Markdown documentation, SVG diagrams and Word documentation. The final 10-table ERD model is implemented and no forbidden operational tables were found.
+
+2. Use Case conformity
+
+The implemented app covers the final use cases: Login, Logout, View Profile, Change Password, Manage Users, Create User, Update User, Delete User through `users.is_active`, Assign / Change Role, View Containers, Validate Container, Register Gate IN, Register Gate OUT and Manage Vessel Visits. Role-scoped pages and navigation match the final actors: Admin gets user management, Gate Operator gets containers and gate operations, Terminal Operator gets containers and vessel visits, and Customer / Line Agent gets own containers.
+
+Remaining mismatch: `/api/containers/validate` allows both `GATE_OPERATOR` and `TERMINAL_OPERATOR`, while the final use case documentation defines Validate Container as included by Gate IN and Gate OUT for Gate Operator.
+
+3. ERD conformity
+
+`database/schema.sql` contains the final 10 tables: `roles`, `users`, `customers`, `containers`, `gate_transactions`, `vessels`, `vessel_visits`, `vessel_visit_containers`, `uploaded_files` and `container_events`. Static search found no implemented `user_roles`, `container_moves`, `yard_blocks`, `yard_slots`, `container_visits` or stowage-plan tables.
+
+`users.id_customer` is now documented as a nullable FK to `customers`, used only for Customer / Line Agent users. It keeps the final 10-table ERD model unchanged and allows Customer / Line Agent users to see only containers linked to their customer.
+
+4. Word documentation conformity
+
+`MaritimeOps_Cazuri_de_utilizare_v3_actualizat.docx` matches the final use case set and states that Manage Users includes Create/Update/Delete/Assign Role, Gate IN/OUT include Validate Container, Manage Vessel Visits includes CSV loading/discharge and operation confirmation, and Manage Stowage Plan was removed. `MaritimeOps_Baza_de_Date_v3_actualizat.docx` matches the final 10-table model and explicitly removes `Container_Moves`, `Yard_Blocks`, `Yard_Slots`, `Container_Visits`, `User_Roles` and separate stowage plan management.
+
+5. App implementation conformity
+
+Routes, components, repositories and services are aligned with the documented modules. CSV import now supports file selection, pasted CSV, sample loading and preview. Vessel visit CRUD, CSV import, uploaded file records, operation records, discharge/load confirmation, container status updates and container events are implemented. Dashboard recent event links are now role-aware for Admin, Gate/Terminal and Customer users.
+
+6. Lint/build result
+
+`npm run lint` completed with 0 errors and 4 warnings. The warnings are `@next/next/no-img-element` for logo `<img>` usage in `src/app/login/page.js`, `src/app/page.js`, `src/components/layout/Header.jsx` and `src/components/layout/Sidebar.jsx`.
+
+`npm run build` completed successfully with Next.js `16.1.6`; all app and API routes compiled.
+
+7. Missing/incomplete items
+
+- Seed data does not create vessel visits, vessel visit container operations, uploaded files or gate transactions, so those flows need manual demo data after schema/seed.
+- Discharge confirmation can only use `area_after` and `position_after` already present on the operation row; it displays an error when missing, but does not provide an inline form in the operations table to fill them during confirmation.
+- Duplicate CSV operation imports can hit the unique constraint `uq_vvc_visit_container_operation`; graceful duplicate handling was not confirmed by static inspection.
+- Docker Compose does not automatically apply `database/schema.sql` or `database/seed.sql`.
+
+8. Risks before final presentation
+
+- Current environment documentation is split into local Next.js + Docker DB mode and full Docker Compose mode. The local app uses `localhost:5433` for PostgreSQL and `localhost:3000` for Next.js; full Compose uses `db:5432` internally and exposes the app on `localhost:3001`.
+- `schema.sql` starts with destructive `DROP TABLE IF EXISTS` statements, so it should not be rerun on data that must be preserved.
+- The intended demo password is documented as `admin123`, but login still needs manual confirmation after schema and seed are applied.
+- Lint warnings from logo `<img>` tags are not blocking, but they may be mentioned if strict lint cleanliness is expected.
+
+9. Recommended fixes, only if needed
+
+- Use the correct environment mode when running: local Next.js should use `localhost:5433`, full Docker Compose should use `db:5432`.
+- Add demo vessel visit/operation/upload examples to `seed.sql` only if the final presentation needs immediate vessel-flow data after seed.
+- Add inline area/position inputs for missing discharge location only if the presentation needs confirming discharge rows that do not already include those CSV values.
 
 ## Last inspection rules
 
-- Only read-only inspection commands were used.
-- No build, lint, test, install, dev server, Docker, or database commands were run.
+- Read-only inspection commands were used for source, documentation, schema, SVG and DOCX review.
+- `npm run lint` and `npm run build` were run because they were explicitly allowed for this verification task.
+- No test, install, dev server, Docker, database, migration, reset or cleanup commands were run.
 - No source code was changed.
 - Only docs/Current_state.md was changed.
 - UI review was static code inspection only.

@@ -8,6 +8,11 @@ export default function HomePage() {
       <section className="app-login-card">
         <div className="app-page" style={{ gap: "1.5rem" }}>
           <div>
+            <img
+              className="app-page-logo"
+              src="/images/logo/logo-maritimeops.png"
+              alt="MaritimeOps logo"
+            />
             <h1 className="app-page-title">MaritimeOps</h1>
             <p className="app-page-description">
               Simplified Container Terminal Management System for users, containers, gate operations, vessel visits and operational history.

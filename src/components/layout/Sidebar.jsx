@@ -8,7 +8,11 @@ export function Sidebar({ user }) {
   return (
     <aside className="app-sidebar">
       <div className="app-sidebar-logo">
-        MaritimeOps
+        <img
+          className="app-sidebar-logo-image"
+          src="/images/logo/logo-maritimeops.png"
+          alt="MaritimeOps logo"
+        />
         <div className="app-sidebar-subtitle">Simplified terminal operations</div>
       </div>
 

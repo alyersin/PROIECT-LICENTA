@@ -32,6 +32,7 @@ code IN ('ADMIN', 'GATE_OPERATOR', 'TERMINAL_OPERATOR', 'CUSTOMER_AGENT')
 Users(
   id_user PK,
   id_role FK -> Roles(id_role) NOT NULL,
+  id_customer FK -> Customers(id_customer) NULL,
   email UNIQUE NOT NULL,
   password_hash NOT NULL,
   full_name NOT NULL,
@@ -45,6 +46,10 @@ Notes:
 - A user has one role.
 - There is no `User_Roles` table in the simplified version.
 - Delete User is implemented as logical deactivation through `is_active`.
+- `id_customer` is nullable and is used only for `CUSTOMER_AGENT` users.
+- For `ADMIN`, `GATE_OPERATOR`, and `TERMINAL_OPERATOR`, `id_customer` should be `NULL`.
+- Customer / Line Agent visibility is limited by matching `users.id_customer` to `containers.id_customer`.
+- This keeps the final 10-table ERD model unchanged because no extra customer-user table is added.
 
 ### Customers
 
@@ -276,6 +281,7 @@ Recommended rules:
 | Relationship | Recommended rule | Reason |
 |---|---|---|
 | Users -> Roles | ON DELETE RESTRICT | A role should not be deleted if users still use it |
+| Users -> Customers | ON DELETE SET NULL | Customer Agent account links can be cleared if customer data is removed |
 | Containers -> Customers | ON DELETE SET NULL | Container history can remain even if customer data is removed |
 | Gate_Transactions -> Containers | ON DELETE RESTRICT | Gate history must not be orphaned |
 | Gate_Transactions -> Users | ON DELETE RESTRICT | Operational history must preserve the user reference |

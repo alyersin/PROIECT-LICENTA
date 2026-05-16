@@ -100,6 +100,7 @@ Fields:
 |---|---|---|
 | id_user | SERIAL PRIMARY KEY | Unique user id |
 | id_role | INTEGER FK NOT NULL | References roles |
+| id_customer | INTEGER FK NULL | References customers only for Customer / Line Agent users |
 | email | VARCHAR UNIQUE NOT NULL | Login email |
 | password_hash | TEXT NOT NULL | bcrypt password hash |
 | full_name | VARCHAR NOT NULL | User full name |
@@ -110,6 +111,7 @@ Relationships:
 
 ```txt
 users N -- 1 roles
+users N -- 1 customers, only for Customer / Line Agent accounts
 users 1 -- N gate_transactions
 users 1 -- N vessel_visits
 users 1 -- N uploaded_files
@@ -117,6 +119,8 @@ users 1 -- N container_events
 ```
 
 For the simplified version, each user has one role. Therefore, `User_Roles` is not required.
+
+`users.id_customer` is nullable and does not add a new table to the final 10-table ERD model. It is used only when the user has the `CUSTOMER_AGENT` role. It allows a Customer / Line Agent to see only containers where `containers.id_customer` matches the user's customer. For `ADMIN`, `GATE_OPERATOR`, and `TERMINAL_OPERATOR` users, `users.id_customer` should be `NULL`.
 
 ## 6. customers
 

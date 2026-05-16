@@ -23,7 +23,7 @@ export default async function ChangePasswordPage() {
         description="Update the password used to access your MaritimeOps account."
       />
 
-      <Card title="Password security" description="Choose a password with at least 6 characters.">
+      <Card>
         <ChangePasswordForm />
       </Card>
     </AppShell>

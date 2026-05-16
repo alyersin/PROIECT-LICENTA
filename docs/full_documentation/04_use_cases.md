@@ -14,6 +14,7 @@
 | UC-08 | Register Gate IN | Gate Operator |
 | UC-09 | Register Gate OUT | Gate Operator |
 | UC-10 | Manage Vessel Visits | Terminal Operator |
+| UC-11 | Export Operational Reports | Gate Operator / Terminal Operator / Customer / Line Agent |
 
 ## 2. Actor inheritance
 
@@ -449,6 +450,42 @@ Invalid CSV:
 Missing location after discharge:
 
 1. System asks Terminal Operator to complete area and position.
+
+## UC-11 - Export Operational Reports
+
+### Description
+
+Authorized users export simple CSV reports generated live from existing MaritimeOps operational data.
+
+### Actors
+
+- Gate Operator
+- Terminal Operator
+- Customer / Line Agent
+
+### Precondition
+
+User is authenticated and has report access for their role.
+
+### Main flow
+
+1. User opens Containers or My Containers.
+2. System displays the container list allowed for the authenticated role.
+3. User searches or filters the visible container rows.
+4. User selects Export CSV.
+5. System exports the currently visible filtered rows.
+6. System applies role-based visibility rules.
+7. System returns a CSV file for download.
+
+### Report availability
+
+- Gate Operator and Terminal Operator can export filtered Containers CSV from the Containers page.
+- Customer / Line Agent can export only customer-scoped filtered Containers CSV from the My Containers page where `containers.id_customer` matches the current user customer.
+- Separate report routes may exist for operational CSVs, but the main workflow is direct export from the filtered container list.
+
+### Notes
+
+No ERD or database schema change is required. Reports are generated from existing tables: `containers`, `customers`, `gate_transactions`, `users`, `vessels`, `vessel_visits`, and `vessel_visit_containers`.
 
 ## 3. Removed use case
 

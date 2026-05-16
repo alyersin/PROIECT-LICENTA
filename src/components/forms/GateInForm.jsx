@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
-import { CONTAINER_CONDITIONS, TERMINAL_AREAS } from "@/lib/constants";
+import { CONTAINER_CONDITIONS, TERMINAL_AREAS, TERMINAL_POSITIONS_BY_AREA } from "@/lib/constants";
 
 export default function GateInForm({ customers = [] }) {
   const router = useRouter();
@@ -14,7 +14,6 @@ export default function GateInForm({ customers = [] }) {
   const [form, setForm] = useState({
     container_no: "",
     truck_no: "",
-    transaction_time: "",
     container_condition: "full",
     seal_no: "",
     area_after: "Export Yard",
@@ -36,6 +35,14 @@ export default function GateInForm({ customers = [] }) {
     setForm((current) => ({
       ...current,
       [name]: value,
+    }));
+  }
+
+  function updateArea(value) {
+    setForm((current) => ({
+      ...current,
+      area_after: value,
+      position_after: "",
     }));
   }
 
@@ -71,7 +78,6 @@ export default function GateInForm({ customers = [] }) {
       ...current,
       container_no: "",
       truck_no: "",
-      transaction_time: "",
       seal_no: "",
       position_after: "",
       observations: "",
@@ -82,6 +88,8 @@ export default function GateInForm({ customers = [] }) {
     setSaving(false);
     router.refresh();
   }
+
+  const availablePositions = TERMINAL_POSITIONS_BY_AREA[form.area_after] || [];
 
   return (
     <form className="app-form" onSubmit={handleSubmit}>
@@ -103,14 +111,6 @@ export default function GateInForm({ customers = [] }) {
           onChange={(event) => updateField("truck_no", event.target.value)}
           error={errors.truck_no}
           required
-        />
-
-        <Input
-          label="Date and time"
-          type="datetime-local"
-          value={form.transaction_time}
-          onChange={(event) => updateField("transaction_time", event.target.value)}
-          error={errors.transaction_time}
         />
 
         <Select
@@ -137,7 +137,7 @@ export default function GateInForm({ customers = [] }) {
         <Select
           label="Area after entry"
           value={form.area_after}
-          onChange={(event) => updateField("area_after", event.target.value)}
+          onChange={(event) => updateArea(event.target.value)}
           error={errors.area_after}
           required
         >
@@ -148,14 +148,20 @@ export default function GateInForm({ customers = [] }) {
           ))}
         </Select>
 
-        <Input
+        <Select
           label="Position after entry"
           value={form.position_after}
           onChange={(event) => updateField("position_after", event.target.value)}
           error={errors.position_after}
-          placeholder="Example: B2-05"
           required
-        />
+        >
+          <option value="">Select position</option>
+          {availablePositions.map((position) => (
+            <option key={position} value={position}>
+              {position}
+            </option>
+          ))}
+        </Select>
 
         <Input
           label="ISO type"
@@ -220,6 +226,7 @@ export default function GateInForm({ customers = [] }) {
         <Button type="submit" disabled={saving}>
           {saving ? "Saving..." : "Register Gate IN"}
         </Button>
+        <p className="app-form-note">Transaction time is recorded automatically when the form is submitted.</p>
       </div>
     </form>
   );

@@ -65,10 +65,18 @@ export async function getContainers(filters = {}) {
         c.current_area,
         c.current_position,
         c.id_customer,
+        latest_gate.container_condition,
         cust.name AS customer_name,
         cust.type AS customer_type
       FROM containers c
       LEFT JOIN customers cust ON cust.id_customer = c.id_customer
+      LEFT JOIN LATERAL (
+        SELECT gt.container_condition
+        FROM gate_transactions gt
+        WHERE gt.id_container = c.id_container
+        ORDER BY gt.transaction_time DESC, gt.id_gate_transaction DESC
+        LIMIT 1
+      ) latest_gate ON true
       ${whereSql}
       ORDER BY c.container_no ASC
     `,
@@ -79,6 +87,10 @@ export async function getContainers(filters = {}) {
 }
 
 export async function getContainersByCustomer(idCustomer, filters = {}) {
+  if (!idCustomer) {
+    return [];
+  }
+
   return getContainers({
     ...filters,
     id_customer: idCustomer,

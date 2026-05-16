@@ -105,12 +105,15 @@ INSERT INTO users (
   full_name,
   is_active
 )
+-- Demo password intended for all demo users: admin123
+-- If login fails, regenerate bcrypt hash with:
+-- node -e "const bcrypt=require('bcrypt'); bcrypt.hash('admin123',10).then(console.log)"
 VALUES
   (
     (SELECT id_role FROM roles WHERE code = 'ADMIN'),
     NULL,
     'admin@maritimeops.local',
-    '$2b$10$PzVz5vXJdvxJQ9AVlS1DcOZPKi.rRTqZkxNSsHYoVCydKczLx8f2i',
+    '$2b$10$fOjlt3y9F1.kw9cNkLfDp.iDrrqKD34gqetuMOFVxPxZ4b.GMUoP2',
     'Admin User',
     true
   ),
@@ -118,7 +121,7 @@ VALUES
     (SELECT id_role FROM roles WHERE code = 'GATE_OPERATOR'),
     NULL,
     'gate@maritimeops.local',
-    '$2b$10$PzVz5vXJdvxJQ9AVlS1DcOZPKi.rRTqZkxNSsHYoVCydKczLx8f2i',
+    '$2b$10$fOjlt3y9F1.kw9cNkLfDp.iDrrqKD34gqetuMOFVxPxZ4b.GMUoP2',
     'Gate Operator',
     true
   ),
@@ -126,7 +129,7 @@ VALUES
     (SELECT id_role FROM roles WHERE code = 'TERMINAL_OPERATOR'),
     NULL,
     'terminal@maritimeops.local',
-    '$2b$10$PzVz5vXJdvxJQ9AVlS1DcOZPKi.rRTqZkxNSsHYoVCydKczLx8f2i',
+    '$2b$10$fOjlt3y9F1.kw9cNkLfDp.iDrrqKD34gqetuMOFVxPxZ4b.GMUoP2',
     'Terminal Operator',
     true
   ),
@@ -134,7 +137,7 @@ VALUES
     (SELECT id_role FROM roles WHERE code = 'CUSTOMER_AGENT'),
     (SELECT id_customer FROM customers WHERE name = 'Maersk Line' LIMIT 1),
     'customer@maritimeops.local',
-    '$2b$10$PzVz5vXJdvxJQ9AVlS1DcOZPKi.rRTqZkxNSsHYoVCydKczLx8f2i',
+    '$2b$10$fOjlt3y9F1.kw9cNkLfDp.iDrrqKD34gqetuMOFVxPxZ4b.GMUoP2',
     'Customer Agent',
     true
   )

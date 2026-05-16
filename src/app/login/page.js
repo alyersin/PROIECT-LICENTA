@@ -18,9 +18,14 @@ export default async function LoginPage() {
     <main className="app-login-shell">
       <section className="app-login-card">
         <div className="app-login-header">
-          <p className="app-login-kicker">Container Terminal Management</p>
-          <h1>MaritimeOps</h1>
-          <p>Sign in with your email and password.</p>
+          {/* <p className="app-login-kicker">Container Terminal Management</p> */}
+
+          <img
+            className="app-login-logo"
+            src="/images/logo/logo-maritimeops.png"
+            alt="MaritimeOps logo"
+          />
+          {/* <h1>MaritimeOps</h1> */}
         </div>
 
         <Suspense fallback={null}>

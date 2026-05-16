@@ -168,9 +168,49 @@ container_visits
 
 Each user has one role through `users.id_role`.
 
-Customer / Line Agent access can be connected through `users.id_customer`.
+Customer / Line Agent access is connected through nullable `users.id_customer`.
+
+`users.id_customer` is a foreign key to `customers.id_customer`. It is used only for `CUSTOMER_AGENT` users so the application can show only containers linked to that customer. It should be `NULL` for `ADMIN`, `GATE_OPERATOR`, and `TERMINAL_OPERATOR` users.
 
 Containers can be connected to customers through `containers.id_customer`, which may be nullable when the customer is not known initially.
+
+This keeps the final 10-table ERD model unchanged.
+
+## Environment modes
+
+Local Next.js + database in Docker:
+
+```txt
+DATABASE_URL=postgres://maritimeops_user:maritimeops_password@localhost:5433/maritimeops_db
+NEXTAUTH_SECRET=change_this_secret_123
+NEXTAUTH_URL=http://localhost:3000
+```
+
+Full Docker Compose:
+
+```txt
+DATABASE_URL=postgres://maritimeops_user:maritimeops_password@db:5432/maritimeops_db
+NEXTAUTH_SECRET=change_this_secret_123
+NEXTAUTH_URL=http://localhost:3001
+```
+
+Current Docker Compose port mapping:
+
+```txt
+web: 3001:3000
+db: 5433:5432
+```
+
+## Demo users
+
+All demo users are intended to use password `admin123`.
+
+```txt
+admin@maritimeops.local
+gate@maritimeops.local
+terminal@maritimeops.local
+customer@maritimeops.local
+```
 
 ## Simplified terminal model
 

@@ -17,6 +17,10 @@ export function canViewContainer(user, container) {
   }
 
   if (user.role_code === "CUSTOMER_AGENT") {
+    if (!user.id_customer || !container.id_customer) {
+      return false;
+    }
+
     return Number(user.id_customer) === Number(container.id_customer);
   }
 

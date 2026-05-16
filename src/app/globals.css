@@ -88,6 +88,14 @@ textarea {
   letter-spacing: -0.03em;
 }
 
+.app-page-logo {
+  display: block;
+  width: 180px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 0.75rem;
+}
+
 .app-page-description {
   margin: 0.35rem 0 0;
   color: var(--color-text-muted);
@@ -121,6 +129,14 @@ textarea {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 800;
+}
+
+.app-sidebar-logo-image {
+  display: block;
+  width: 160px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 0.6rem;
 }
 
 .app-sidebar-subtitle {
@@ -161,6 +177,19 @@ textarea {
   gap: 1rem;
 }
 
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-header-logo {
+  width: 132px;
+  height: auto;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
 .app-header-title {
   margin: 0;
   font-size: 1rem;
@@ -171,12 +200,6 @@ textarea {
   margin: 0 0 0.15rem;
   color: var(--color-text-muted);
   font-size: 0.75rem;
-}
-
-.app-header-user {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
 }
 
 .app-user-block {
@@ -193,6 +216,77 @@ textarea {
 .app-user-role {
   font-size: 0.75rem;
   color: var(--color-text-muted);
+}
+
+.app-account-menu {
+  position: relative;
+}
+
+.app-account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.6rem 0.45rem 0.8rem;
+  cursor: pointer;
+  list-style: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.app-account-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.app-account-trigger:hover,
+.app-account-menu[open] .app-account-trigger {
+  background: rgba(30, 41, 59, 0.72);
+  border-color: var(--color-border);
+}
+
+.app-account-caret {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.app-account-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 20;
+  width: 210px;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.45rem;
+  background: #020617;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.app-account-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.75rem;
+  background: transparent;
+  color: var(--color-text-main);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: none;
+}
+
+.app-account-link:hover {
+  background: rgba(30, 41, 59, 0.85);
+}
+
+.app-account-logout {
+  color: #fecaca;
 }
 
 .app-card {
@@ -310,6 +404,13 @@ textarea {
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 0.25rem;
+}
+
+.app-form-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.825rem;
+  line-height: 1.4;
 }
 
 .app-filter-form {
@@ -562,6 +663,45 @@ textarea {
   font-size: 0.8rem;
 }
 
+.app-mobile-nav {
+  display: none;
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(2, 6, 23, 0.94);
+  padding: 0.75rem 1rem;
+}
+
+.app-mobile-nav-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.8rem;
+  background: var(--color-bg-panel);
+  color: var(--color-text-main);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.app-mobile-nav-panel {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.app-mobile-nav-link {
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.app-mobile-nav-link:hover {
+  background: var(--color-bg-card);
+  color: var(--color-text-main);
+}
+
 .app-login-shell,
 .login-page {
   min-height: 100vh;
@@ -588,6 +728,14 @@ textarea {
 .login-card-header {
   margin-bottom: 1.25rem;
   text-align: center;
+}
+
+.app-login-logo {
+  display: block;
+  width: 282px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto 0.75rem;
 }
 
 .app-login-header h1,
@@ -638,17 +786,21 @@ textarea {
   }
 
   .app-header {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
   }
 
-  .app-header-user {
-    width: 100%;
-    justify-content: space-between;
+  .app-mobile-nav {
+    display: block;
   }
 
   .app-user-block {
-    text-align: left;
+    text-align: right;
+  }
+
+  .app-account-dropdown {
+    right: 0;
+    width: min(240px, calc(100vw - 2rem));
   }
 
   .app-page-header {

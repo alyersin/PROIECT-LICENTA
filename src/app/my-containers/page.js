@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/ui/PageHeader";
-import Card from "@/components/ui/Card";
-import ContainersTable from "@/components/containers/ContainersTable";
+import ContainersListPanel from "@/components/containers/ContainersListPanel";
 import { getCurrentUser } from "@/lib/auth";
 import { getContainersByCustomer } from "@/repositories/containers.repository";
 
@@ -25,9 +24,13 @@ export default async function MyContainersPage({ searchParams }) {
   const filters = {
     search: resolvedSearchParams?.search || "",
     status: resolvedSearchParams?.status || "",
+    condition: resolvedSearchParams?.condition || "",
+    current_area: resolvedSearchParams?.current_area || "",
+    size_ft: resolvedSearchParams?.size_ft || "",
+    iso_type: resolvedSearchParams?.iso_type || "",
   };
 
-  const containers = await getContainersByCustomer(currentUser.id_customer, filters);
+  const containers = await getContainersByCustomer(currentUser.id_customer);
 
   return (
     <AppShell user={currentUser}>
@@ -36,33 +39,18 @@ export default async function MyContainersPage({ searchParams }) {
         description="View containers associated with your customer account."
       />
 
-      <Card>
-        <form className="app-filter-form">
-          <input
-            className="app-input"
-            name="search"
-            placeholder="Search container"
-            defaultValue={filters.search}
-          />
-
-          <select className="app-select" name="status" defaultValue={filters.status}>
-            <option value="">All statuses</option>
-            <option value="planned">planned</option>
-            <option value="in_terminal">in_terminal</option>
-            <option value="gate_out">gate_out</option>
-            <option value="discharged">discharged</option>
-            <option value="loaded">loaded</option>
-          </select>
-
-          <button className="app-button app-button-secondary" type="submit">
-            Filter
-          </button>
-        </form>
-      </Card>
-
-      <Card>
-        <ContainersTable containers={containers} basePath="/my-containers" />
-      </Card>
+      <ContainersListPanel
+        containers={containers}
+        basePath="/my-containers"
+        initialFilters={filters}
+        showConditionFilter
+        showAreaFilter
+        showSizeFilter
+        showIsoTypeFilter
+        includeCustomerSearch={false}
+        searchPlaceholder="Search by container or ISO type"
+        exportFilename="my-containers.csv"
+      />
     </AppShell>
   );
 }

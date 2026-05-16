@@ -28,6 +28,9 @@ export async function GET(request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const containers = await getContainers(filters);
+  const containers = await getContainers({
+    ...filters,
+    id_customer: searchParams.get("id_customer") || "",
+  });
   return NextResponse.json({ containers });
 }

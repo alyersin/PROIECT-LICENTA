@@ -4,7 +4,7 @@ services:
     container_name: maritimeops-web
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     env_file:
       - .env
     depends_on:
@@ -21,7 +21,7 @@ services:
     volumes:
       - maritimeops_pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
 volumes:
   maritimeops_pgdata:

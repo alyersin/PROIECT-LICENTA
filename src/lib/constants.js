@@ -13,6 +13,14 @@ export const TERMINAL_AREAS = [
   "ISO Tanks / IMDG Cargo Area",
 ];
 
+export const TERMINAL_POSITIONS_BY_AREA = {
+  "Export Yard": ["B1-01", "B1-02", "B2-01", "B2-02"],
+  "Import Yard": ["A1-01", "A1-02", "A2-01", "A2-02"],
+  "Reefer Area": ["R1-01", "R1-02", "R2-01", "R2-02"],
+  "Empty Yard": ["E1-01", "E1-02", "E2-01", "E2-02"],
+  "ISO Tanks / IMDG Cargo Area": ["T1-01", "T1-02", "T2-01", "T2-02"],
+};
+
 export const GATE_TRANSACTION_TYPES = {
   GATE_IN: "GATE_IN",
   GATE_OUT: "GATE_OUT",
