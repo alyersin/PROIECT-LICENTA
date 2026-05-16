@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Textarea from "@/components/ui/Textarea";
+import { mutationRequestHeaders } from "@/lib/apiSecurity";
 
 export default function GateOutForm() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function GateOutForm() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...mutationRequestHeaders(),
       },
       body: JSON.stringify(form),
     });

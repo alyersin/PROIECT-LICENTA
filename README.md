@@ -181,29 +181,49 @@ This keeps the final 10-table ERD model unchanged.
 Local Next.js + database in Docker:
 
 ```txt
-DATABASE_URL=postgres://maritimeops_user:maritimeops_password@localhost:5433/maritimeops_db
-NEXTAUTH_SECRET=change_this_secret_123
+POSTGRES_DB=maritimeops_db
+POSTGRES_USER=maritimeops_user
+POSTGRES_PASSWORD=replace_with_a_strong_local_database_password
+POSTGRES_PORT=5433
+DATABASE_URL=postgres://maritimeops_user:replace_with_a_strong_local_database_password@localhost:5433/maritimeops_db
+NEXTAUTH_SECRET=replace_with_at_least_32_random_bytes_base64
 NEXTAUTH_URL=http://localhost:3000
 ```
 
-Full Docker Compose:
+Full Docker Compose behind host Nginx:
 
 ```txt
-DATABASE_URL=postgres://maritimeops_user:maritimeops_password@db:5432/maritimeops_db
-NEXTAUTH_SECRET=change_this_secret_123
-NEXTAUTH_URL=http://localhost:3001
+POSTGRES_DB=maritimeops_db
+POSTGRES_USER=maritimeops_user
+POSTGRES_PASSWORD=replace_with_a_strong_local_database_password
+DATABASE_URL=postgres://maritimeops_user:replace_with_a_strong_local_database_password@db:5432/maritimeops_db
+NEXTAUTH_SECRET=replace_with_at_least_32_random_bytes_base64
+NEXTAUTH_URL=https://my-subdomain.go.ro
+NODE_ENV=production
 ```
 
-Current Docker Compose port mapping:
+`NEXTAUTH_SECRET` and `POSTGRES_PASSWORD` must be changed for every real or shared environment. Do not reuse the example placeholders.
+
+Current safe Docker Compose port behavior:
 
 ```txt
-web: 3001:3000
-db: 5433:5432
+web: 127.0.0.1:3000:3000
+db: no published ports
 ```
+
+The main `docker-compose.yml` is intended for the local Ubuntu Server deployment where Nginx runs on the host. PostgreSQL is reachable only inside the Docker network by the app container through `db:5432`.
+
+For host-based local development where Next.js runs outside Docker and only PostgreSQL runs in Docker, use the optional localhost-only override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+```
+
+This binds PostgreSQL to `127.0.0.1:${POSTGRES_PORT:-5433}` only. Do not use the dev override for public deployment.
 
 ## Demo users
 
-All demo users are intended to use password `admin123`.
+Development-only demo users are intended to use password `admin123`. Change or disable these accounts before any shared demo or production-like deployment.
 
 ```txt
 admin@maritimeops.local
@@ -264,6 +284,83 @@ The stowage plan is considered external to the terminal application and is norma
 
 MaritimeOps works with simplified CSV loading/discharge lists inside the `Manage Vessel Visits` module.
 
+## Local Ubuntu Server deployment
+
+Target deployment architecture:
+
+```txt
+Internet
+  -> Digi router / ONT
+  -> forwards only 80 and 443
+  -> Ubuntu Server
+  -> UFW allows only SSH, 80, 443
+  -> Nginx + Let's Encrypt
+  -> http://127.0.0.1:3000
+  -> MaritimeOps Docker web container
+  -> Docker internal network
+  -> PostgreSQL Docker container with no published ports
+```
+
+Public access should go through Nginx only. Do not forward or expose PostgreSQL. Do not expose app ports `3000` or `3001` publicly.
+
+Recommended router forwarding:
+
+```txt
+80/tcp  -> Ubuntu server
+443/tcp -> Ubuntu server
+```
+
+Do not forward:
+
+```txt
+22/tcp unless intentionally restricted
+3000/tcp
+3001/tcp
+5432/tcp
+5433/tcp
+```
+
+Recommended UFW setup:
+
+```bash
+sudo ufw allow OpenSSH
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw deny 5432/tcp
+sudo ufw deny 5433/tcp
+sudo ufw deny 3000/tcp
+sudo ufw deny 3001/tcp
+sudo ufw enable
+sudo ufw status verbose
+```
+
+Recommended Nginx and Certbot setup:
+
+```bash
+sudo apt update
+sudo apt install nginx certbot python3-certbot-nginx
+sudo certbot --nginx -d my-subdomain.go.ro
+sudo certbot renew --dry-run
+```
+
+Use `docs/nginx-maritimeops.conf.example` as the starting Nginx site config. It proxies to `http://127.0.0.1:3000`, sets proxy headers, and includes basic security headers to add after HTTPS is working.
+
+Before public exposure:
+
+- set `NEXTAUTH_URL=https://my-subdomain.go.ro`
+- generate `NEXTAUTH_SECRET` with `openssl rand -base64 32`
+- generate a strong `POSTGRES_PASSWORD`
+- keep `.env` on the server only
+- run `chmod 600 .env`
+- change or disable all demo accounts using `admin123`
+- confirm PostgreSQL has no `ports:` section in production Compose
+- confirm the app is reachable only through Nginx
+
+See also:
+
+- `docs/DEPLOYMENT_SECURITY_CHECKLIST.md`
+- `LOCAL_DEPLOYMENT_SECURITY_AUDIT.md`
+
 ## Deployment scope
 
 The licenta version is designed for local Linux server deployment using Docker Compose.
@@ -274,13 +371,13 @@ Included:
 - Docker Compose
 - PostgreSQL container
 - Next.js web container
+- Nginx reverse proxy
+- Let's Encrypt SSL with Certbot
 - Docker logs
 - UFW documentation
 
 Not required for the current version:
 
-- Nginx
-- HTTPS
 - Kubernetes
 - Redis
 - advanced monitoring

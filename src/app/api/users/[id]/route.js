@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { validateMutationRequest } from "@/lib/apiSecurity";
 import { findUserById, deactivateUser } from "@/repositories/users.repository";
 import { updateUserFromPayload } from "@/services/users.service";
 
@@ -25,6 +26,15 @@ export async function GET(_request, { params }) {
 }
 
 export async function PATCH(request, { params }) {
+  const requestCheck = validateMutationRequest(request);
+
+  if (!requestCheck.ok) {
+    return NextResponse.json(
+      { error: requestCheck.error },
+      { status: requestCheck.status }
+    );
+  }
+
   const { id } = await params;
   const user = await getCurrentUser();
 
@@ -45,7 +55,16 @@ export async function PATCH(request, { params }) {
   return NextResponse.json({ user: result.user });
 }
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(request, { params }) {
+  const requestCheck = validateMutationRequest(request);
+
+  if (!requestCheck.ok) {
+    return NextResponse.json(
+      { error: requestCheck.error },
+      { status: requestCheck.status }
+    );
+  }
+
   const { id } = await params;
   const user = await getCurrentUser();
 

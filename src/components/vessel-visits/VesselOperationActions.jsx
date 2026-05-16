@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { mutationRequestHeaders } from "@/lib/apiSecurity";
 
 export default function VesselOperationActions({ operation }) {
   const router = useRouter();
@@ -32,6 +33,7 @@ export default function VesselOperationActions({ operation }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...mutationRequestHeaders(),
       },
       body: JSON.stringify(payload),
     });

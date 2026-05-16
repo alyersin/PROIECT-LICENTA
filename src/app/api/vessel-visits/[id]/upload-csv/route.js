@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { validateMutationRequest } from "@/lib/apiSecurity";
 import { importCsvForVesselVisit } from "@/services/csvImport.service";
 
 export async function POST(request, { params }) {
+  const requestCheck = validateMutationRequest(request);
+
+  if (!requestCheck.ok) {
+    return NextResponse.json(
+      { error: requestCheck.error },
+      { status: requestCheck.status }
+    );
+  }
+
   const { id } = await params;
   const user = await getCurrentUser();
 

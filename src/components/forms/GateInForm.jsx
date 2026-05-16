@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
+import { mutationRequestHeaders } from "@/lib/apiSecurity";
 import { CONTAINER_CONDITIONS, TERMINAL_AREAS, TERMINAL_POSITIONS_BY_AREA } from "@/lib/constants";
 
 export default function GateInForm({ customers = [] }) {
@@ -57,6 +58,7 @@ export default function GateInForm({ customers = [] }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...mutationRequestHeaders(),
       },
       body: JSON.stringify({
         ...form,

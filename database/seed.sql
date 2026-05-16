@@ -105,7 +105,8 @@ INSERT INTO users (
   full_name,
   is_active
 )
--- Demo password intended for all demo users: admin123
+-- Development-only demo password intended for local seeded users: admin123
+-- Change these passwords before any shared demo or production-like deployment.
 -- If login fails, regenerate bcrypt hash with:
 -- node -e "const bcrypt=require('bcrypt'); bcrypt.hash('admin123',10).then(console.log)"
 VALUES

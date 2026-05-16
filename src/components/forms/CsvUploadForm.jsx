@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
+import { mutationRequestHeaders } from "@/lib/apiSecurity";
 
 const sampleDischarge = `container_no,iso_type,size_ft,weight_kg,port,area_after,position_after
 MSCU5555555,45G1,40,24000,ROCND,Import Yard,A1-01
@@ -96,6 +97,7 @@ export default function CsvUploadForm({ vesselVisit }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...mutationRequestHeaders(),
       },
       body: JSON.stringify(form),
     });

@@ -4,24 +4,52 @@ services:
     container_name: maritimeops-web
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      # Nginx runs on the host and is the only public entry point.
+      # The app is reachable only from the Ubuntu server itself.
+      - "127.0.0.1:3000:3000"
     env_file:
       - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - maritimeops_internal
 
   db:
     image: postgres:16
     container_name: maritimeops-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: maritimeops_db
-      POSTGRES_USER: maritimeops_user
-      POSTGRES_PASSWORD: maritimeops_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - maritimeops_pgdata:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
+    # No ports are published. PostgreSQL is reachable only inside Docker.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - maritimeops_internal
 
 volumes:
   maritimeops_pgdata:
+
+networks:
+  maritimeops_internal:
+    driver: bridge

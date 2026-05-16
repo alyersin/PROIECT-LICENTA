@@ -2,6 +2,11 @@ import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { findUserByEmail } from "@/repositories/users.repository";
 import { comparePassword } from "@/lib/passwords";
+import {
+  getClientIp,
+  isLoginRateLimited,
+  recordLoginAttempt,
+} from "@/lib/apiSecurity";
 
 export const authOptions = {
   session: {
@@ -17,25 +22,34 @@ export const authOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = credentials?.email?.trim().toLowerCase();
         const password = credentials?.password;
+        const ip = getClientIp(request);
 
         if (!email || !password) {
+          return null;
+        }
+
+        if (isLoginRateLimited(email, ip)) {
           return null;
         }
 
         const user = await findUserByEmail(email);
 
         if (!user || !user.is_active) {
+          recordLoginAttempt(email, ip, false);
           return null;
         }
 
         const passwordOk = await comparePassword(password, user.password_hash);
 
         if (!passwordOk) {
+          recordLoginAttempt(email, ip, false);
           return null;
         }
+
+        recordLoginAttempt(email, ip, true);
 
         return {
           id: String(user.id_user),

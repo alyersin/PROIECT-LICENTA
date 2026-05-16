@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
+import { mutationRequestHeaders } from "@/lib/apiSecurity";
 
 export default function UserForm({ mode, user, roles = [], customers = [] }) {
   const router = useRouter();
@@ -55,6 +56,7 @@ export default function UserForm({ mode, user, roles = [], customers = [] }) {
       method,
       headers: {
         "Content-Type": "application/json",
+        ...mutationRequestHeaders(),
       },
       body: JSON.stringify(payload),
     });
@@ -83,6 +85,7 @@ export default function UserForm({ mode, user, roles = [], customers = [] }) {
 
     const response = await fetch(`/api/users/${user.id_user}`, {
       method: "DELETE",
+      headers: mutationRequestHeaders(),
     });
 
     if (!response.ok) {

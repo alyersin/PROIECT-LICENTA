@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { validateMutationRequest } from "@/lib/apiSecurity";
 import { getVesselVisitById } from "@/repositories/vesselVisits.repository";
 import { updateVesselVisitFromPayload } from "@/services/vesselVisits.service";
 
@@ -25,6 +26,15 @@ export async function GET(_request, { params }) {
 }
 
 export async function PATCH(request, { params }) {
+  const requestCheck = validateMutationRequest(request);
+
+  if (!requestCheck.ok) {
+    return NextResponse.json(
+      { error: requestCheck.error },
+      { status: requestCheck.status }
+    );
+  }
+
   const { id } = await params;
   const user = await getCurrentUser();
 

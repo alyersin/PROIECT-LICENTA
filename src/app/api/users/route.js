@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { validateMutationRequest } from "@/lib/apiSecurity";
 import { getUsers } from "@/repositories/users.repository";
 import { createUserFromPayload } from "@/services/users.service";
 
@@ -19,6 +20,15 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  const requestCheck = validateMutationRequest(request);
+
+  if (!requestCheck.ok) {
+    return NextResponse.json(
+      { error: requestCheck.error },
+      { status: requestCheck.status }
+    );
+  }
+
   const user = await getCurrentUser();
 
   if (!isAdmin(user)) {

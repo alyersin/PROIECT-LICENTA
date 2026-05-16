@@ -1,0 +1,9 @@
+# Optional local-development override.
+# Use only when running Next.js on the host and PostgreSQL in Docker:
+# docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+#
+# PostgreSQL is bound to 127.0.0.1 only. Do not use this file for public deployment.
+services:
+  db:
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"

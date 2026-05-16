@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
+import { mutationRequestHeaders } from "@/lib/apiSecurity";
 import { TERMINAL_AREAS, TERMINAL_POSITIONS_BY_AREA } from "@/lib/constants";
 
 export default function UpdateLocationForm({ container }) {
@@ -45,6 +46,7 @@ export default function UpdateLocationForm({ container }) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        ...mutationRequestHeaders(),
       },
       body: JSON.stringify(form),
     });

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
+import { mutationRequestHeaders } from "@/lib/apiSecurity";
 import { VESSEL_VISIT_STATUSES } from "@/lib/constants";
 
 function toDatetimeLocal(value) {
@@ -61,6 +62,7 @@ export default function VesselVisitForm({ mode, vesselVisit, vessels = [] }) {
       method,
       headers: {
         "Content-Type": "application/json",
+        ...mutationRequestHeaders(),
       },
       body: JSON.stringify({
         ...form,
