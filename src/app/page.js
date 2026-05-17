@@ -13,7 +13,7 @@ export default function HomePage() {
               src="/images/logo/logo-maritimeops.png"
               alt="MaritimeOps logo"
             />
-            <h1 className="app-page-title">MaritimeOps</h1>
+            {/* <h1 className="app-page-title">MaritimeOps</h1> */}
             <p className="app-page-description">
               Simplified Container Terminal Management System for users, containers, gate operations, vessel visits and operational history.
             </p>
