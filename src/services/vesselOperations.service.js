@@ -44,6 +44,10 @@ export async function confirmDischargeOperation(user, idOperation, payload) {
       idOperation
     );
 
+    if (!confirmedOperation) {
+      return { conflict: true };
+    }
+
     const container = await updateContainerAfterDischarge(client, operation.id_container, {
       current_area: location.area,
       current_position: location.position,
@@ -62,6 +66,14 @@ export async function confirmDischargeOperation(user, idOperation, payload) {
 
     return { confirmedOperation, container };
   });
+
+  if (result.conflict) {
+    return {
+      ok: false,
+      status: 409,
+      errors: { operation: "Operation is no longer planned." },
+    };
+  }
 
   return { ok: true, ...result };
 }
@@ -91,6 +103,10 @@ export async function confirmLoadOperation(user, idOperation) {
       idOperation
     );
 
+    if (!confirmedOperation) {
+      return { conflict: true };
+    }
+
     const container = await updateContainerAfterLoad(client, operation.id_container);
 
     await createContainerEvent(client, {
@@ -105,6 +121,14 @@ export async function confirmLoadOperation(user, idOperation) {
 
     return { confirmedOperation, container };
   });
+
+  if (result.conflict) {
+    return {
+      ok: false,
+      status: 409,
+      errors: { operation: "Operation is no longer planned." },
+    };
+  }
 
   return { ok: true, ...result };
 }

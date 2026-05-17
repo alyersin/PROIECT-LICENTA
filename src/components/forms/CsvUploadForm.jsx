@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
 import { mutationRequestHeaders } from "@/lib/apiSecurity";
+import { CSV_UPLOAD_MAX_BYTES } from "@/lib/securityLimits";
 
 const sampleDischarge = `container_no,iso_type,size_ft,weight_kg,port,area_after,position_after
 MSCU5555555,45G1,40,24000,ROCND,Import Yard,A1-01
@@ -77,6 +78,18 @@ export default function CsvUploadForm({ vesselVisit }) {
       return;
     }
 
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setErrors({ file_name: "Please choose a .csv file." });
+      return;
+    }
+
+    if (file.size > CSV_UPLOAD_MAX_BYTES) {
+      setErrors({
+        csv_text: `CSV file is too large. Maximum ${CSV_UPLOAD_MAX_BYTES} bytes are allowed.`,
+      });
+      return;
+    }
+
     const text = await file.text();
 
     setForm((current) => ({
@@ -144,6 +157,7 @@ export default function CsvUploadForm({ vesselVisit }) {
             onChange={(event) => updateField("file_name", event.target.value)}
             required
           />
+          {errors.file_name ? <span className="app-error">{errors.file_name}</span> : null}
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import pool from "@/lib/db";
+import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT } from "@/lib/securityLimits";
 
 export async function findUserByEmail(email) {
   const result = await pool.query(
@@ -53,7 +54,9 @@ export async function findUserById(idUser) {
   return result.rows[0] || null;
 }
 
-export async function getUsers() {
+export async function getUsers(limit = DEFAULT_LIST_LIMIT) {
+  const safeLimit = Math.min(Number(limit) || DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT);
+
   const result = await pool.query(`
     SELECT
       u.id_user,
@@ -70,7 +73,8 @@ export async function getUsers() {
     JOIN roles r ON r.id_role = u.id_role
     LEFT JOIN customers c ON c.id_customer = u.id_customer
     ORDER BY u.created_at DESC, u.id_user DESC
-  `);
+    LIMIT $1
+  `, [safeLimit]);
 
   return result.rows;
 }
@@ -173,4 +177,28 @@ export async function deactivateUser(idUser) {
   );
 
   return result.rows[0] || null;
+}
+
+export async function countActiveAdmins(excludedUserId = null) {
+  const params = [];
+  let excludedSql = "";
+
+  if (excludedUserId) {
+    params.push(excludedUserId);
+    excludedSql = `AND u.id_user <> $${params.length}`;
+  }
+
+  const result = await pool.query(
+    `
+      SELECT COUNT(*)::int AS count
+      FROM users u
+      JOIN roles r ON r.id_role = u.id_role
+      WHERE r.code = 'ADMIN'
+        AND u.is_active = true
+        ${excludedSql}
+    `,
+    params
+  );
+
+  return result.rows[0]?.count || 0;
 }

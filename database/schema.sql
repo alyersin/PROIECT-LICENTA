@@ -47,6 +47,9 @@ CREATE TABLE containers (
   current_position VARCHAR(100),
   id_customer INTEGER NULL REFERENCES customers(id_customer) ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT chk_containers_size CHECK (size_ft IS NULL OR size_ft IN (20, 40, 45)),
+  CONSTRAINT chk_containers_number_format CHECK (container_no ~ '^[A-Z]{4}[0-9]{7}$'),
+  CONSTRAINT chk_containers_status CHECK (status IN ('planned', 'in_terminal', 'gate_out', 'discharged', 'loaded')),
+  CONSTRAINT chk_containers_gross_weight CHECK (gross_weight_kg IS NULL OR gross_weight_kg >= 0),
   CONSTRAINT chk_containers_area CHECK (current_area IS NULL OR current_area IN ('Import Yard', 'Export Yard', 'Reefer Area', 'Empty Yard', 'ISO Tanks / IMDG Cargo Area'))
 );
 
@@ -101,6 +104,7 @@ CREATE TABLE vessel_visit_containers (
   position_after VARCHAR(100),
   CONSTRAINT chk_vvc_operation_type CHECK (operation_type IN ('DISCHARGE', 'LOAD')),
   CONSTRAINT chk_vvc_operation_status CHECK (operation_status IN ('planned', 'confirmed', 'cancelled')),
+  CONSTRAINT chk_vvc_weight CHECK (weight_kg IS NULL OR weight_kg >= 0),
   CONSTRAINT chk_vvc_area CHECK (area_after IS NULL OR area_after IN ('Import Yard', 'Export Yard', 'Reefer Area', 'Empty Yard', 'ISO Tanks / IMDG Cargo Area')),
   CONSTRAINT uq_vvc_visit_container_operation UNIQUE (id_vessel_visit, id_container, operation_type)
 );

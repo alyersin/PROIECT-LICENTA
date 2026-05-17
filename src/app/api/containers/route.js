@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { parseLimit } from "@/lib/apiRequest";
+import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT } from "@/lib/securityLimits";
 import { getContainers, getContainersByCustomer } from "@/repositories/containers.repository";
 
 export async function GET(request) {
@@ -17,6 +19,7 @@ export async function GET(request) {
     current_area: searchParams.get("current_area") || "",
     size_ft: searchParams.get("size_ft") || "",
     is_reefer: searchParams.get("is_reefer") || "",
+    limit: parseLimit(searchParams.get("limit"), DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT),
   };
 
   if (user.role_code === "CUSTOMER_AGENT") {

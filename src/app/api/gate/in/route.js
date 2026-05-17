@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { readJsonBody } from "@/lib/apiRequest";
 import { validateMutationRequest } from "@/lib/apiSecurity";
 import { registerGateIn } from "@/services/gate.service";
 
@@ -19,8 +20,13 @@ export async function POST(request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const payload = await request.json();
-  const result = await registerGateIn(user, payload);
+  const body = await readJsonBody(request);
+
+  if (!body.ok) {
+    return body.response;
+  }
+
+  const result = await registerGateIn(user, body.data);
 
   if (!result.ok) {
     return NextResponse.json(

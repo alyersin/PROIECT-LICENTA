@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { parseLimit, readJsonBody } from "@/lib/apiRequest";
 import { validateMutationRequest } from "@/lib/apiSecurity";
+import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT } from "@/lib/securityLimits";
 import { getVesselVisits } from "@/repositories/vesselVisits.repository";
 import { createVesselVisitFromPayload } from "@/services/vesselVisits.service";
 
-export async function GET() {
+export async function GET(request) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -15,7 +17,10 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const vesselVisits = await getVesselVisits();
+  const { searchParams } = new URL(request.url);
+  const vesselVisits = await getVesselVisits(
+    parseLimit(searchParams.get("limit"), DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT)
+  );
   return NextResponse.json({ vesselVisits });
 }
 
@@ -35,8 +40,13 @@ export async function POST(request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const payload = await request.json();
-  const result = await createVesselVisitFromPayload(user, payload);
+  const body = await readJsonBody(request);
+
+  if (!body.ok) {
+    return body.response;
+  }
+
+  const result = await createVesselVisitFromPayload(user, body.data);
 
   if (!result.ok) {
     return NextResponse.json(

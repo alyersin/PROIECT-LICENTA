@@ -68,6 +68,7 @@ export async function confirmVesselVisitContainer(client, idOperation) {
       UPDATE vessel_visit_containers
       SET operation_status = 'confirmed'
       WHERE id_vessel_visit_container = $1
+        AND operation_status = 'planned'
       RETURNING *
     `,
     [idOperation]

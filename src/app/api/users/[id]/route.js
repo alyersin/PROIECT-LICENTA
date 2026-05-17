@@ -1,22 +1,25 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { getRouteId, readJsonBody, requireApiRole } from "@/lib/apiRequest";
 import { validateMutationRequest } from "@/lib/apiSecurity";
-import { findUserById, deactivateUser } from "@/repositories/users.repository";
-import { updateUserFromPayload } from "@/services/users.service";
-
-function isAdmin(user) {
-  return user?.role_code === "ADMIN";
-}
+import { findUserById } from "@/repositories/users.repository";
+import { deactivateUserFromPayload, updateUserFromPayload } from "@/services/users.service";
 
 export async function GET(_request, { params }) {
-  const { id } = await params;
-  const user = await getCurrentUser();
+  const idResult = await getRouteId(params);
 
-  if (!isAdmin(user)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!idResult.ok) {
+    return idResult.response;
   }
 
-  const selectedUser = await findUserById(id);
+  const user = await getCurrentUser();
+  const authResponse = requireApiRole(user, ["ADMIN"]);
+
+  if (authResponse) {
+    return authResponse;
+  }
+
+  const selectedUser = await findUserById(idResult.id);
 
   if (!selectedUser) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -35,15 +38,26 @@ export async function PATCH(request, { params }) {
     );
   }
 
-  const { id } = await params;
-  const user = await getCurrentUser();
+  const idResult = await getRouteId(params);
 
-  if (!isAdmin(user)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!idResult.ok) {
+    return idResult.response;
   }
 
-  const payload = await request.json();
-  const result = await updateUserFromPayload(id, payload);
+  const user = await getCurrentUser();
+  const authResponse = requireApiRole(user, ["ADMIN"]);
+
+  if (authResponse) {
+    return authResponse;
+  }
+
+  const body = await readJsonBody(request);
+
+  if (!body.ok) {
+    return body.response;
+  }
+
+  const result = await updateUserFromPayload(idResult.id, body.data, user);
 
   if (!result.ok) {
     return NextResponse.json(
@@ -65,17 +79,26 @@ export async function DELETE(request, { params }) {
     );
   }
 
-  const { id } = await params;
-  const user = await getCurrentUser();
+  const idResult = await getRouteId(params);
 
-  if (!isAdmin(user)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!idResult.ok) {
+    return idResult.response;
   }
 
-  const result = await deactivateUser(id);
+  const user = await getCurrentUser();
+  const authResponse = requireApiRole(user, ["ADMIN"]);
 
-  if (!result) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (authResponse) {
+    return authResponse;
+  }
+
+  const result = await deactivateUserFromPayload(idResult.id, user);
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { errors: result.errors },
+      { status: result.status || 400 }
+    );
   }
 
   return NextResponse.json({ ok: true });

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { getRouteId } from "@/lib/apiRequest";
 import { validateMutationRequest } from "@/lib/apiSecurity";
 import { confirmLoadOperation } from "@/services/vesselOperations.service";
 
@@ -13,14 +14,19 @@ export async function POST(request, { params }) {
     );
   }
 
-  const { id } = await params;
+  const idResult = await getRouteId(params);
+
+  if (!idResult.ok) {
+    return idResult.response;
+  }
+
   const user = await getCurrentUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = await confirmLoadOperation(user, id);
+  const result = await confirmLoadOperation(user, idResult.id);
 
   if (!result.ok) {
     return NextResponse.json(

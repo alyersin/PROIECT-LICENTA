@@ -1,4 +1,5 @@
 import pool from "@/lib/db";
+import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT } from "@/lib/securityLimits";
 
 function buildContainerFilters(filters = {}) {
   const where = [];
@@ -51,6 +52,11 @@ function buildContainerFilters(filters = {}) {
 
 export async function getContainers(filters = {}) {
   const { whereSql, params } = buildContainerFilters(filters);
+  const limit = Math.min(
+    Number(filters.limit) || DEFAULT_LIST_LIMIT,
+    MAX_LIST_LIMIT
+  );
+  params.push(limit);
 
   const result = await pool.query(
     `
@@ -79,6 +85,7 @@ export async function getContainers(filters = {}) {
       ) latest_gate ON true
       ${whereSql}
       ORDER BY c.container_no ASC
+      LIMIT $${params.length}
     `,
     params
   );

@@ -1,6 +1,9 @@
 import pool from "@/lib/db";
+import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT } from "@/lib/securityLimits";
 
-export async function getVesselVisits() {
+export async function getVesselVisits(limit = DEFAULT_LIST_LIMIT) {
+  const safeLimit = Math.min(Number(limit) || DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT);
+
   const result = await pool.query(`
     SELECT
       vv.id_vessel_visit,
@@ -28,7 +31,8 @@ export async function getVesselVisits() {
       v.imo,
       u.full_name
     ORDER BY vv.eta DESC NULLS LAST, vv.created_at DESC
-  `);
+    LIMIT $1
+  `, [safeLimit]);
 
   return result.rows;
 }
@@ -123,7 +127,9 @@ export async function updateVesselVisit(idVesselVisit, data) {
   return result.rows[0] || null;
 }
 
-export async function getVesselVisitContainers(idVesselVisit) {
+export async function getVesselVisitContainers(idVesselVisit, limit = DEFAULT_LIST_LIMIT) {
+  const safeLimit = Math.min(Number(limit) || DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT);
+
   const result = await pool.query(
     `
       SELECT
@@ -146,8 +152,9 @@ export async function getVesselVisitContainers(idVesselVisit) {
       JOIN containers c ON c.id_container = vvc.id_container
       WHERE vvc.id_vessel_visit = $1
       ORDER BY vvc.operation_type ASC, c.container_no ASC
+      LIMIT $2
     `,
-    [idVesselVisit]
+    [idVesselVisit, safeLimit]
   );
 
   return result.rows;

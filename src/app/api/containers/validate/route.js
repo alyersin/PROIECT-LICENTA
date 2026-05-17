@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { readJsonBody } from "@/lib/apiRequest";
 import { validateMutationRequest } from "@/lib/apiSecurity";
 import { validateContainerForOperation } from "@/services/containers.service";
 
@@ -23,8 +24,13 @@ export async function POST(request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const payload = await request.json();
-  const result = await validateContainerForOperation(payload.container_no);
+  const body = await readJsonBody(request);
+
+  if (!body.ok) {
+    return body.response;
+  }
+
+  const result = await validateContainerForOperation(body.data.container_no);
 
   if (!result.ok) {
     return NextResponse.json({ errors: result.errors }, { status: 400 });

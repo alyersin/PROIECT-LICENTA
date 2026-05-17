@@ -6,6 +6,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
+function getSafeCallbackUrl(value) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  if (value.includes("\\") || value.includes("\r") || value.includes("\n")) {
+    return "/dashboard";
+  }
+
+  return value;
+}
+
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -24,12 +36,13 @@ export default function LoginForm() {
     }
 
     setIsLoading(true);
+    const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
 
     const result = await signIn("credentials", {
       email,
       password,
       redirect: false,
-      callbackUrl: searchParams.get("callbackUrl") || "/dashboard",
+      callbackUrl,
     });
 
     setIsLoading(false);
@@ -39,7 +52,7 @@ export default function LoginForm() {
       return;
     }
 
-    router.push(result?.url || "/dashboard");
+    router.push(callbackUrl);
     router.refresh();
   }
 

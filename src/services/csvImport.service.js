@@ -1,6 +1,10 @@
 import { withTransaction } from "@/lib/db";
 import { parseCsvText, normalizeCsvRow, validateCsvRows } from "@/lib/csv";
 import { TERMINAL_AREAS } from "@/lib/constants";
+import {
+  CSV_UPLOAD_MAX_BYTES,
+  CSV_UPLOAD_MAX_FILE_NAME_LENGTH,
+} from "@/lib/securityLimits";
 import { createContainer, getContainerByNumber } from "@/repositories/containers.repository";
 import { createUploadedFile } from "@/repositories/uploadedFiles.repository";
 import { createVesselVisitContainer } from "@/repositories/vesselVisitContainers.repository";
@@ -18,6 +22,27 @@ function operationTypeFromFileType(fileType) {
   return null;
 }
 
+function getUtf8ByteLength(value) {
+  return new TextEncoder().encode(String(value || "")).length;
+}
+
+function normalizeCsvFileName(value) {
+  const baseName = String(value || "")
+    .trim()
+    .split(/[\\/]/)
+    .pop();
+
+  if (!baseName || /[\x00-\x1F\x7F]/.test(baseName)) {
+    return "";
+  }
+
+  return baseName
+    .replace(/[^A-Za-z0-9._ -]/g, "_")
+    .replace(/\s+/g, " ")
+    .replace(/^\.+/, "")
+    .trim();
+}
+
 export async function importCsvForVesselVisit(user, idVesselVisit, payload) {
   if (user?.role_code !== "TERMINAL_OPERATOR") {
     return { ok: false, status: 403, errors: { permission: "Forbidden." } };
@@ -30,7 +55,7 @@ export async function importCsvForVesselVisit(user, idVesselVisit, payload) {
   }
 
   const fileType = String(payload.file_type || "").trim();
-  const fileName = String(payload.file_name || "").trim() || "uploaded.csv";
+  const fileName = normalizeCsvFileName(payload.file_name) || "uploaded.csv";
   const csvText = String(payload.csv_text || "");
 
   const errors = {};
@@ -41,6 +66,18 @@ export async function importCsvForVesselVisit(user, idVesselVisit, payload) {
 
   if (!csvText.trim()) {
     errors.csv_text = "CSV content is required.";
+  }
+
+  if (!fileName.toLowerCase().endsWith(".csv")) {
+    errors.file_name = "File name must end with .csv.";
+  }
+
+  if (fileName.length > CSV_UPLOAD_MAX_FILE_NAME_LENGTH) {
+    errors.file_name = `File name is too long. Maximum ${CSV_UPLOAD_MAX_FILE_NAME_LENGTH} characters are allowed.`;
+  }
+
+  if (getUtf8ByteLength(csvText) > CSV_UPLOAD_MAX_BYTES) {
+    errors.csv_text = `CSV content is too large. Maximum ${CSV_UPLOAD_MAX_BYTES} bytes are allowed.`;
   }
 
   if (Object.keys(errors).length > 0) {

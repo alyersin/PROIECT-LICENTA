@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { readJsonBody } from "@/lib/apiRequest";
 import { validateMutationRequest } from "@/lib/apiSecurity";
 import { comparePassword, hashPassword } from "@/lib/passwords";
 import { findUserByEmail, updateUserPassword } from "@/repositories/users.repository";
@@ -20,7 +21,13 @@ export async function POST(request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const payload = await request.json();
+  const body = await readJsonBody(request);
+
+  if (!body.ok) {
+    return body.response;
+  }
+
+  const payload = body.data;
   const currentPassword = String(payload.current_password || "");
   const newPassword = String(payload.new_password || "");
   const confirmPassword = String(payload.confirm_password || "");
@@ -50,7 +57,7 @@ export async function POST(request) {
   const userWithPassword = await findUserByEmail(currentUser.email);
 
   if (!userWithPassword || !userWithPassword.is_active) {
-    return NextResponse.json({ error: "User not found or inactive." }, { status: 404 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const currentPasswordOk = await comparePassword(

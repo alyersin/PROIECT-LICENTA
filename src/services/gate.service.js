@@ -1,5 +1,6 @@
 import { withTransaction } from "@/lib/db";
 import { CONTAINER_CONDITIONS, TERMINAL_AREAS } from "@/lib/constants";
+import { getContainerNumberError, normalizeContainerNumber } from "@/lib/validation";
 import {
   createContainer,
   getContainerByNumber,
@@ -8,10 +9,6 @@ import {
 } from "@/repositories/containers.repository";
 import { createContainerEvent } from "@/repositories/events.repository";
 import { createGateTransaction } from "@/repositories/gate.repository";
-
-function normalizeContainerNo(value) {
-  return String(value || "").trim().toUpperCase();
-}
 
 function nullableText(value) {
   const text = String(value || "").trim();
@@ -27,27 +24,14 @@ function nullableNumber(value) {
   return Number.isFinite(number) ? number : null;
 }
 
-function validateContainerNumber(containerNo) {
-  if (!containerNo) {
-    return "Container number is required.";
-  }
-
-  if (containerNo.length < 4 || containerNo.length > 20) {
-    return "Container number length is invalid.";
-  }
-
-  return null;
-}
-
 export async function registerGateIn(user, payload) {
   if (user?.role_code !== "GATE_OPERATOR") {
     return { ok: false, status: 403, errors: { permission: "Forbidden." } };
   }
 
   const data = {
-    container_no: normalizeContainerNo(payload.container_no),
+    container_no: normalizeContainerNumber(payload.container_no),
     truck_no: nullableText(payload.truck_no),
-    transaction_time: nullableText(payload.transaction_time),
     container_condition: nullableText(payload.container_condition),
     seal_no: nullableText(payload.seal_no),
     area_after: nullableText(payload.area_after),
@@ -61,7 +45,7 @@ export async function registerGateIn(user, payload) {
   };
 
   const errors = {};
-  const containerNoError = validateContainerNumber(data.container_no);
+  const containerNoError = getContainerNumberError(data.container_no);
 
   if (containerNoError) {
     errors.container_no = containerNoError;
@@ -127,7 +111,6 @@ export async function registerGateIn(user, payload) {
       id_user: user.id_user,
       transaction_type: "GATE_IN",
       truck_no: data.truck_no,
-      transaction_time: data.transaction_time,
       container_condition: data.container_condition,
       seal_no: data.seal_no,
       area_after: data.area_after,
@@ -157,16 +140,15 @@ export async function registerGateOut(user, payload) {
   }
 
   const data = {
-    container_no: normalizeContainerNo(payload.container_no),
+    container_no: normalizeContainerNumber(payload.container_no),
     truck_no: nullableText(payload.truck_no),
-    transaction_time: nullableText(payload.transaction_time),
     destination: nullableText(payload.destination),
     seal_no: nullableText(payload.seal_no),
     observations: nullableText(payload.observations),
   };
 
   const errors = {};
-  const containerNoError = validateContainerNumber(data.container_no);
+  const containerNoError = getContainerNumberError(data.container_no);
 
   if (containerNoError) {
     errors.container_no = containerNoError;
@@ -208,7 +190,6 @@ export async function registerGateOut(user, payload) {
       id_user: user.id_user,
       transaction_type: "GATE_OUT",
       truck_no: data.truck_no,
-      transaction_time: data.transaction_time,
       destination: data.destination,
       seal_no: data.seal_no,
       observations: data.observations,

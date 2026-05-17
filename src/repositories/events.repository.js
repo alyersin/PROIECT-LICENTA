@@ -1,6 +1,9 @@
 import pool from "@/lib/db";
+import { DEFAULT_EVENT_LIMIT, MAX_EVENT_LIMIT } from "@/lib/securityLimits";
 
-export async function getContainerEvents(idContainer) {
+export async function getContainerEvents(idContainer, limit = DEFAULT_EVENT_LIMIT) {
+  const safeLimit = Math.min(Number(limit) || DEFAULT_EVENT_LIMIT, MAX_EVENT_LIMIT);
+
   const result = await pool.query(
     `
       SELECT
@@ -20,8 +23,9 @@ export async function getContainerEvents(idContainer) {
       JOIN users u ON u.id_user = ce.id_user
       WHERE ce.id_container = $1
       ORDER BY ce.event_time DESC, ce.id_container_event DESC
+      LIMIT $2
     `,
-    [idContainer]
+    [idContainer, safeLimit]
   );
 
   return result.rows;

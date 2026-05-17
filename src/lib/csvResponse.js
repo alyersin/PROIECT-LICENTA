@@ -1,4 +1,6 @@
 import Papa from "papaparse";
+import { escapeCsvFormulaRows } from "@/lib/csvExport";
+import { MAX_EXPORT_ROWS } from "@/lib/securityLimits";
 
 function normalizeCsvValue(value) {
   if (value instanceof Date) {
@@ -13,7 +15,8 @@ function normalizeCsvValue(value) {
 }
 
 export function createCsvResponse(rows, fields, filename) {
-  const data = rows.map((row) => {
+  const limitedRows = rows.slice(0, MAX_EXPORT_ROWS);
+  const data = limitedRows.map((row) => {
     const normalized = {};
 
     for (const field of fields) {
@@ -23,7 +26,7 @@ export function createCsvResponse(rows, fields, filename) {
     return normalized;
   });
 
-  const csv = Papa.unparse(data, { columns: fields });
+  const csv = Papa.unparse(escapeCsvFormulaRows(data, fields), { columns: fields });
 
   return new Response(csv, {
     headers: {

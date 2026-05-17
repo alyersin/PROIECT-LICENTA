@@ -1,5 +1,6 @@
 import { withTransaction } from "@/lib/db";
 import { TERMINAL_AREAS } from "@/lib/constants";
+import { getContainerNumberError, normalizeContainerNumber } from "@/lib/validation";
 import {
   getContainerById,
   getContainerByNumber,
@@ -39,10 +40,11 @@ export async function validateContainerForOperation(containerNo) {
     return { ok: false, errors };
   }
 
-  const normalizedContainerNo = String(containerNo).trim().toUpperCase();
+  const normalizedContainerNo = normalizeContainerNumber(containerNo);
+  const containerNoError = getContainerNumberError(normalizedContainerNo);
 
-  if (normalizedContainerNo.length < 4 || normalizedContainerNo.length > 20) {
-    errors.container_no = "Container number length is invalid.";
+  if (containerNoError) {
+    errors.container_no = containerNoError;
     return { ok: false, errors };
   }
 

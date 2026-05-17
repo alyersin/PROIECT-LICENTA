@@ -1,21 +1,23 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { parseLimit, readJsonBody, requireApiRole } from "@/lib/apiRequest";
 import { validateMutationRequest } from "@/lib/apiSecurity";
+import { DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT } from "@/lib/securityLimits";
 import { getUsers } from "@/repositories/users.repository";
 import { createUserFromPayload } from "@/services/users.service";
 
-function isAdmin(user) {
-  return user?.role_code === "ADMIN";
-}
-
-export async function GET() {
+export async function GET(request) {
   const user = await getCurrentUser();
+  const authResponse = requireApiRole(user, ["ADMIN"]);
 
-  if (!isAdmin(user)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (authResponse) {
+    return authResponse;
   }
 
-  const users = await getUsers();
+  const { searchParams } = new URL(request.url);
+  const users = await getUsers(
+    parseLimit(searchParams.get("limit"), DEFAULT_LIST_LIMIT, MAX_LIST_LIMIT)
+  );
   return NextResponse.json({ users });
 }
 
@@ -30,13 +32,19 @@ export async function POST(request) {
   }
 
   const user = await getCurrentUser();
+  const authResponse = requireApiRole(user, ["ADMIN"]);
 
-  if (!isAdmin(user)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (authResponse) {
+    return authResponse;
   }
 
-  const payload = await request.json();
-  const result = await createUserFromPayload(payload);
+  const body = await readJsonBody(request);
+
+  if (!body.ok) {
+    return body.response;
+  }
+
+  const result = await createUserFromPayload(body.data);
 
   if (!result.ok) {
     return NextResponse.json({ errors: result.errors }, { status: 400 });

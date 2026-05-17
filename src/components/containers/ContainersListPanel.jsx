@@ -5,6 +5,7 @@ import Papa from "papaparse";
 import Card from "@/components/ui/Card";
 import ContainersTable from "@/components/containers/ContainersTable";
 import { TERMINAL_AREAS } from "@/lib/constants";
+import { escapeCsvFormulaRows } from "@/lib/csvExport";
 
 const CONTAINER_STATUSES = ["planned", "in_terminal", "gate_out", "discharged", "loaded"];
 const CONTAINER_CONDITIONS = ["empty", "full"];
@@ -48,7 +49,7 @@ function buildCsvRows(containers) {
 function downloadCsv(containers, filename) {
   const csv = Papa.unparse({
     fields: CSV_COLUMNS,
-    data: buildCsvRows(containers),
+    data: escapeCsvFormulaRows(buildCsvRows(containers), CSV_COLUMNS),
   });
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);

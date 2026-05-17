@@ -1,5 +1,7 @@
 import {
   createUser,
+  countActiveAdmins,
+  deactivateUser,
   emailExists,
   findUserById,
   updateUser,
@@ -91,7 +93,7 @@ export async function createUserFromPayload(payload) {
   return { ok: true, user: created };
 }
 
-export async function updateUserFromPayload(idUser, payload) {
+export async function updateUserFromPayload(idUser, payload, currentUser = null) {
   const existingUser = await findUserById(idUser);
 
   if (!existingUser) {
@@ -108,6 +110,30 @@ export async function updateUserFromPayload(idUser, payload) {
     return { ok: false, errors };
   }
 
+  const isExistingAdmin = existingUser.role_code === "ADMIN";
+  const targetStaysAdmin = data.id_role === existingUser.id_role;
+  const targetStaysActive = data.is_active === true;
+
+  if (Number(currentUser?.id_user) === Number(idUser) && !targetStaysActive) {
+    return {
+      ok: false,
+      status: 400,
+      errors: { is_active: "You cannot deactivate your own admin account." },
+    };
+  }
+
+  if (isExistingAdmin && (!targetStaysActive || !targetStaysAdmin)) {
+    const remainingAdmins = await countActiveAdmins(idUser);
+
+    if (remainingAdmins === 0) {
+      return {
+        ok: false,
+        status: 400,
+        errors: { id_role: "At least one active administrator must remain." },
+      };
+    }
+  }
+
   const updated = await updateUser(idUser, {
     id_role: data.id_role,
     id_customer: data.id_customer,
@@ -122,4 +148,35 @@ export async function updateUserFromPayload(idUser, payload) {
   }
 
   return { ok: true, user: updated };
+}
+
+export async function deactivateUserFromPayload(idUser, currentUser) {
+  const existingUser = await findUserById(idUser);
+
+  if (!existingUser) {
+    return { ok: false, status: 404, errors: { user: "User not found." } };
+  }
+
+  if (Number(currentUser?.id_user) === Number(idUser)) {
+    return {
+      ok: false,
+      status: 400,
+      errors: { user: "You cannot deactivate your own admin account." },
+    };
+  }
+
+  if (existingUser.role_code === "ADMIN") {
+    const remainingAdmins = await countActiveAdmins(idUser);
+
+    if (remainingAdmins === 0) {
+      return {
+        ok: false,
+        status: 400,
+        errors: { user: "At least one active administrator must remain." },
+      };
+    }
+  }
+
+  const deactivated = await deactivateUser(idUser);
+  return { ok: true, user: deactivated };
 }

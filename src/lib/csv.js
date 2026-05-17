@@ -1,4 +1,9 @@
 import Papa from "papaparse";
+import {
+  CSV_UPLOAD_MAX_CELL_LENGTH,
+  CSV_UPLOAD_MAX_ROWS,
+} from "@/lib/securityLimits";
+import { getContainerNumberError } from "@/lib/validation";
 
 export function parseCsvText(csvText) {
   const result = Papa.parse(csvText, {
@@ -38,14 +43,36 @@ export function validateCsvRows(rows, fileType) {
     return errors;
   }
 
+  if (rows.length > CSV_UPLOAD_MAX_ROWS) {
+    errors.push({
+      row: 0,
+      field: "file",
+      message: `CSV file is too large. Maximum ${CSV_UPLOAD_MAX_ROWS} data rows are allowed.`,
+    });
+
+    return errors;
+  }
+
   rows.forEach((row, index) => {
     const line = index + 2;
 
-    if (!row.container_no || !String(row.container_no).trim()) {
+    for (const [field, value] of Object.entries(row)) {
+      if (String(value || "").length > CSV_UPLOAD_MAX_CELL_LENGTH) {
+        errors.push({
+          row: line,
+          field,
+          message: `Cell is too long. Maximum ${CSV_UPLOAD_MAX_CELL_LENGTH} characters are allowed.`,
+        });
+      }
+    }
+
+    const containerNoError = getContainerNumberError(row.container_no);
+
+    if (containerNoError) {
       errors.push({
         row: line,
         field: "container_no",
-        message: "Container number is required.",
+        message: containerNoError,
       });
     }
 

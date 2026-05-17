@@ -1,4 +1,12 @@
 import pool from "@/lib/db";
+import { MAX_EXPORT_ROWS } from "@/lib/securityLimits";
+
+function addLimit(params, filters = {}) {
+  const requestedLimit = Number(filters.limit) || MAX_EXPORT_ROWS;
+  const limit = Math.min(requestedLimit, MAX_EXPORT_ROWS);
+  params.push(limit);
+  return params.length;
+}
 
 export async function getContainersReportRows(filters = {}) {
   const params = [];
@@ -8,6 +16,8 @@ export async function getContainersReportRows(filters = {}) {
     params.push(filters.id_customer);
     where.push(`c.id_customer = $${params.length}`);
   }
+
+  const limitParam = addLimit(params, filters);
 
   const result = await pool.query(
     `
@@ -31,6 +41,7 @@ export async function getContainersReportRows(filters = {}) {
       ) latest_gate ON true
       ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
       ORDER BY c.container_no ASC
+      LIMIT $${limitParam}
     `,
     params
   );
@@ -46,6 +57,8 @@ export async function getGateTransactionsReportRows(filters = {}) {
     params.push(filters.id_customer);
     where.push(`c.id_customer = $${params.length}`);
   }
+
+  const limitParam = addLimit(params, filters);
 
   const result = await pool.query(
     `
@@ -64,6 +77,7 @@ export async function getGateTransactionsReportRows(filters = {}) {
       JOIN users u ON u.id_user = gt.id_user
       ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
       ORDER BY gt.transaction_time DESC, gt.id_gate_transaction DESC
+      LIMIT $${limitParam}
     `,
     params
   );
@@ -71,7 +85,10 @@ export async function getGateTransactionsReportRows(filters = {}) {
   return result.rows;
 }
 
-export async function getVesselVisitContainersReportRows() {
+export async function getVesselVisitContainersReportRows(filters = {}) {
+  const params = [];
+  const limitParam = addLimit(params, filters);
+
   const result = await pool.query(`
     SELECT
       v.name AS vessel_name,
@@ -87,7 +104,8 @@ export async function getVesselVisitContainersReportRows() {
     JOIN vessels v ON v.id_vessel = vv.id_vessel
     JOIN containers c ON c.id_container = vvc.id_container
     ORDER BY vv.eta DESC NULLS LAST, v.name ASC, c.container_no ASC
-  `);
+    LIMIT $${limitParam}
+  `, params);
 
   return result.rows;
 }

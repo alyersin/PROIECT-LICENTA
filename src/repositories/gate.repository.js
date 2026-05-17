@@ -18,7 +18,7 @@ export async function createGateTransaction(client, data) {
         position_after,
         observations
       )
-      VALUES ($1, $2, $3, $4, COALESCE($5, CURRENT_TIMESTAMP), $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `,
     [
@@ -26,7 +26,6 @@ export async function createGateTransaction(client, data) {
       data.id_user,
       data.transaction_type,
       data.truck_no,
-      data.transaction_time || null,
       data.container_condition || null,
       data.seal_no || null,
       data.destination || null,

@@ -20,6 +20,20 @@ export function normalizeContainerNumber(value) {
   return String(value || "").trim().toUpperCase();
 }
 
+export function getContainerNumberError(value) {
+  const containerNo = normalizeContainerNumber(value);
+
+  if (!isRequired(containerNo)) {
+    return "Container number is required.";
+  }
+
+  if (!isValidContainerNumber(containerNo)) {
+    return "Container number must use 4 letters followed by 7 digits.";
+  }
+
+  return null;
+}
+
 export function validateLogin(data) {
   const errors = {};
 
