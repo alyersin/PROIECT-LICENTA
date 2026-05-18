@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ButtonLink } from "@/components/ui/Button";
+import CubeButtonLink from "@/components/ui/CubeButtonLink";
 
 const featureModules = [
   {
@@ -65,7 +65,7 @@ export default function HomePage() {
           height={217}
           priority
         />
-        <ButtonLink href="/login">Launch App</ButtonLink>
+        <CubeButtonLink href="/login">Launch App</CubeButtonLink>
       </header>
 
       <div className="home-main">
