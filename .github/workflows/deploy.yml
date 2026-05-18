@@ -22,7 +22,6 @@ jobs:
           chmod 700 ~/.ssh
           printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "${{ secrets.SERVER_PORT }}" -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy with Docker Compose
         timeout-minutes: 10
@@ -33,6 +32,7 @@ jobs:
             -p "${{ secrets.SERVER_PORT }}" \
             -o BatchMode=yes \
             -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=accept-new \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=3 \
             "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
