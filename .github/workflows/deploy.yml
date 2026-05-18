@@ -25,32 +25,36 @@ jobs:
           ssh-keyscan -p "${{ secrets.SERVER_PORT }}" -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy with Docker Compose
+        timeout-minutes: 10
         run: |
           ssh \
+            -T \
             -i ~/.ssh/deploy_key \
             -p "${{ secrets.SERVER_PORT }}" \
             -o BatchMode=yes \
+            -o ConnectTimeout=15 \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=3 \
-            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
+            'bash -lc "
             set -e
             export GIT_TERMINAL_PROMPT=0
 
-            echo "Opening app directory..."
+            echo Opening app directory...
             cd "${{ secrets.APP_PATH }}"
 
-            echo "Fetching latest code..."
+            echo Fetching latest code...
             git fetch --prune origin
 
-            echo "Checking out main..."
+            echo Checking out main...
             git checkout main
 
-            echo "Pulling main..."
+            echo Pulling main...
             git pull --ff-only origin main
 
-            echo "Rebuilding and restarting containers..."
+            echo Rebuilding and restarting containers...
             docker compose up -d --build
 
-            echo "Current containers:"
+            echo Current containers:
             docker compose ps
-          EOF
+            "'
