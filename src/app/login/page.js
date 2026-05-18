@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
 import LoginForm from "@/components/forms/LoginForm";
 import { getCurrentUser } from "@/lib/auth";
@@ -22,10 +23,13 @@ export default async function LoginPage() {
           {/* <p className="app-login-kicker">Container Terminal Management</p> */}
 
           <Link href="/" aria-label="Go to MaritimeOps homepage">
-            <img
+            <Image
               className="app-login-logo"
               src="/images/logo/logo-maritimeops.png"
               alt="MaritimeOps logo"
+              width={623}
+              height={217}
+              priority
             />
           </Link>
           {/* <h1>MaritimeOps</h1> */}

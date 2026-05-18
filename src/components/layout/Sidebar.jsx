@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getNavigationForRole } from "@/lib/navigation";
 
 export function Sidebar({ user }) {
@@ -8,10 +9,12 @@ export function Sidebar({ user }) {
   return (
     <aside className="app-sidebar">
       <div className="app-sidebar-logo">
-        <img
+        <Image
           className="app-sidebar-logo-image"
           src="/images/logo/logo-maritimeops.png"
           alt="MaritimeOps logo"
+          width={623}
+          height={217}
         />
         <div className="app-sidebar-subtitle">Simplified terminal operations</div>
       </div>

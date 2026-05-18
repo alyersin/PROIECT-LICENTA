@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -29,7 +30,16 @@ body {
   min-height: 100%;
   background: var(--color-bg-main);
   color: var(--color-text-main);
-  font-family: Inter, Arial, sans-serif;
+  font-family: "Sora", Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Sora", Arial, sans-serif;
 }
 
 a {
@@ -41,6 +51,20 @@ input,
 select,
 textarea {
   font: inherit;
+  font-family: "Sora", Arial, sans-serif;
+}
+
+.app-shell,
+.home-shell,
+.home-header,
+.home-main,
+.app-card,
+.home-card,
+.app-button,
+.app-input,
+.app-select,
+.app-textarea {
+  font-family: "Sora", Arial, sans-serif;
 }
 
 .app-shell {
@@ -82,6 +106,7 @@ textarea {
 
 .app-page-title {
   margin: 0;
+  font-family: "Sora", Arial, sans-serif;
   font-size: 1.75rem;
   line-height: 2rem;
   font-weight: 800;
@@ -760,14 +785,22 @@ textarea {
 }
 
 .home-shell {
-  min-height: 100vh;
-  padding: 2rem;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.6vh, 1.25rem);
+  padding: clamp(1rem, 2vw, 1.75rem);
   background:
-    radial-gradient(circle at 12% 5%, rgba(37, 99, 235, 0.3), transparent 28rem),
-    radial-gradient(circle at 90% 2%, rgba(14, 165, 233, 0.16), transparent 24rem),
-    linear-gradient(180deg, #020617 0%, var(--color-bg-main) 45%, #020617 100%);
+    linear-gradient(90deg, rgba(2, 6, 23, 0.9) 0%, rgba(2, 6, 23, 0.78) 48%, rgba(2, 6, 23, 0.58) 100%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.48), rgba(2, 6, 23, 0.78)),
+    url("/images/terminal/maritimeops-1.jpg");
+  background-position: center;
+  background-size: cover;
 }
 
+.home-header,
+.home-main,
 .home-hero,
 .home-section,
 .home-final-cta {
@@ -775,13 +808,29 @@ textarea {
   margin: 0 auto;
 }
 
+.home-header {
+  min-height: 4.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.home-main {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(160px, 0.85fr) auto auto;
+  align-content: stretch;
+  gap: clamp(0.85rem, 1.8vh, 1.25rem);
+}
+
 .home-hero {
-  min-height: 640px;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
   align-items: center;
-  gap: 2rem;
-  padding: 3rem 0 4rem;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  padding: clamp(0.5rem, 1.2vh, 1rem) 0;
 }
 
 .home-hero-content {
@@ -790,16 +839,17 @@ textarea {
 }
 
 .home-logo {
-  width: min(320px, 100%);
+  width: min(280px, 54vw);
   height: auto;
   object-fit: contain;
 }
 
 .home-hero h1 {
   margin: 0;
+  font-family: "Sora", Arial, sans-serif;
   font-size: clamp(3rem, 8vw, 6rem);
   line-height: 0.95;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0;
 }
 
@@ -807,7 +857,7 @@ textarea {
   margin: 0;
   max-width: 760px;
   color: #bfdbfe;
-  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  font-size: clamp(1.35rem, 3vw, 2.25rem);
   line-height: 1.35;
   font-weight: 800;
 }
@@ -816,8 +866,8 @@ textarea {
   margin: 0;
   max-width: 720px;
   color: var(--color-text-muted);
-  font-size: 1.02rem;
-  line-height: 1.75;
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+  line-height: 1.65;
 }
 
 .home-hero-actions {
@@ -829,8 +879,8 @@ textarea {
 
 .home-hero-panel {
   display: grid;
-  gap: 0.9rem;
-  padding: 1.15rem;
+  gap: 0.7rem;
+  padding: 0.95rem;
   border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: var(--radius-xl);
   background:
@@ -843,7 +893,7 @@ textarea {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem;
+  padding: 0.8rem 0.9rem;
   border: 1px solid rgba(51, 65, 85, 0.82);
   border-radius: var(--radius-md);
   background: rgba(30, 41, 59, 0.55);
@@ -860,7 +910,7 @@ textarea {
 }
 
 .home-section {
-  padding: 4rem 0;
+  padding: clamp(0.85rem, 1.8vh, 1.25rem) 0 0;
   border-top: 1px solid rgba(51, 65, 85, 0.65);
 }
 
@@ -873,8 +923,8 @@ textarea {
 
 .home-section-heading {
   display: grid;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
 }
 
 .home-section-about .home-section-heading {
@@ -884,9 +934,10 @@ textarea {
 .home-section-heading h2,
 .home-final-cta h2 {
   margin: 0;
-  font-size: clamp(1.65rem, 3vw, 2.4rem);
+  font-family: "Sora", Arial, sans-serif;
+  font-size: clamp(1.35rem, 2.4vw, 1.95rem);
   line-height: 1.15;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0;
 }
 
@@ -905,11 +956,11 @@ textarea {
 
 .home-card-grid {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .home-card-grid-features {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .home-card-grid-roles {
@@ -918,7 +969,7 @@ textarea {
 
 .home-card {
   min-height: 100%;
-  padding: 1.2rem;
+  padding: 0.85rem;
   border: 1px solid rgba(51, 65, 85, 0.9);
   border-radius: var(--radius-lg);
   background: rgba(17, 24, 39, 0.82);
@@ -926,18 +977,21 @@ textarea {
 }
 
 .home-card h3 {
-  margin: 0 0 0.85rem;
-  font-size: 1rem;
+  margin: 0 0 0.55rem;
+  font-family: "Sora", Arial, sans-serif;
+  font-size: 0.92rem;
   line-height: 1.35;
+  font-weight: 700;
 }
 
 .home-card ul {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.28rem;
   margin: 0;
   padding-left: 1.1rem;
   color: var(--color-text-muted);
-  line-height: 1.55;
+  font-size: 0.88rem;
+  line-height: 1.42;
 }
 
 .home-flow {
@@ -965,7 +1019,7 @@ textarea {
   border-radius: 999px;
   background: rgba(37, 99, 235, 0.24);
   color: #bfdbfe;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .home-flow-step strong {
@@ -975,18 +1029,19 @@ textarea {
 .home-stack-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .home-stack-list span {
   display: inline-flex;
   align-items: center;
-  min-height: 2.35rem;
+  min-height: 2rem;
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: var(--radius-md);
-  padding: 0.45rem 0.85rem;
+  padding: 0.35rem 0.7rem;
   background: rgba(15, 23, 42, 0.75);
   color: #dbeafe;
+  font-size: 0.88rem;
   font-weight: 800;
 }
 
@@ -1023,7 +1078,10 @@ textarea {
     min-height: auto;
   }
 
-  .home-card-grid-features,
+  .home-card-grid-features {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .home-card-grid-roles,
   .home-flow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1079,15 +1137,34 @@ textarea {
   }
 
   .home-shell {
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+    display: block;
     padding: 1rem;
   }
 
+  .home-header {
+    min-height: auto;
+    margin-bottom: 2rem;
+  }
+
+  .home-logo {
+    width: min(210px, 52vw);
+  }
+
+  .home-main {
+    display: block;
+  }
+
   .home-hero {
-    padding: 2rem 0 3rem;
+    display: grid;
+    gap: 1.25rem;
+    padding: 0 0 2rem;
   }
 
   .home-section {
-    padding: 3rem 0;
+    padding: 2rem 0 0;
   }
 
   .home-card-grid-features,
@@ -1103,6 +1180,7 @@ textarea {
 
   .home-panel-row {
     flex-direction: column;
+    gap: 0.35rem;
   }
 
   .home-panel-row strong {
